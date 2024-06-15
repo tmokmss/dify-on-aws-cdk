@@ -9,13 +9,20 @@ import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export interface PostgresProps {
   vpc: IVpc;
+
+  /**
+   * If true, create an bastion instance.
+   * @default false
+   */
+  createBastion?: boolean;
 }
 
 export class Postgres extends Construct implements IConnectable {
   public readonly connections: Connections;
   public readonly cluster: rds.DatabaseCluster;
   public readonly secret: ISecret;
-  public readonly databaseName: string = 'main';
+  public readonly databaseName = 'main';
+  public readonly pgVectorDatabaseName = 'pgvector';
 
   private queries: AwsCustomResource[] = [];
 
@@ -41,37 +48,39 @@ export class Postgres extends Construct implements IConnectable {
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
-    const host = new ec2.BastionHostLinux(this, 'BastionHost', {
-      vpc,
-      machineImage: ec2.MachineImage.latestAmazonLinux2023({ cpuType: ec2.AmazonLinuxCpuType.ARM_64 }),
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.NANO),
-      blockDevices: [
-        {
-          deviceName: '/dev/sdf',
-          volume: ec2.BlockDeviceVolume.ebs(8, {
-            encrypted: true,
-          }),
-        },
-      ],
-    });
+    if (props.createBastion) {
+      const host = new ec2.BastionHostLinux(this, 'BastionHost', {
+        vpc,
+        machineImage: ec2.MachineImage.latestAmazonLinux2023({ cpuType: ec2.AmazonLinuxCpuType.ARM_64 }),
+        instanceType: ec2.InstanceType.of(ec2.InstanceClass.T4G, ec2.InstanceSize.NANO),
+        blockDevices: [
+          {
+            deviceName: '/dev/sdf',
+            volume: ec2.BlockDeviceVolume.ebs(8, {
+              encrypted: true,
+            }),
+          },
+        ],
+      });
 
-    new CfnOutput(this, 'PortForwardCommand', {
-      value: `aws ssm start-session --region ${Stack.of(this).region} --target ${
-        host.instanceId
-      } --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["${
-        cluster.clusterEndpoint.port
-      }"], "localPortNumber":["${cluster.clusterEndpoint.port}"], "host": ["${cluster.clusterEndpoint.hostname}"]}'`,
-    });
-    new CfnOutput(this, 'DatabaseSecretsCommand', {
-      value: `aws secretsmanager get-secret-value --secret-id ${cluster.secret!.secretName} --region ${Stack.of(this).region}`,
-    });
+      new CfnOutput(this, 'PortForwardCommand', {
+        value: `aws ssm start-session --region ${Stack.of(this).region} --target ${
+          host.instanceId
+        } --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"portNumber":["${
+          cluster.clusterEndpoint.port
+        }"], "localPortNumber":["${cluster.clusterEndpoint.port}"], "host": ["${cluster.clusterEndpoint.hostname}"]}'`,
+      });
+      new CfnOutput(this, 'DatabaseSecretsCommand', {
+        value: `aws secretsmanager get-secret-value --secret-id ${cluster.secret!.secretName} --region ${Stack.of(this).region}`,
+      });
+    }
 
     this.connections = cluster.connections;
     this.cluster = cluster;
     this.secret = cluster.secret!;
 
-    this.runQuery('CREATE DATABASE dify;', undefined);
-    this.runQuery('CREATE EXTENSION IF NOT EXISTS vector;', 'dify');
+    this.runQuery(`CREATE DATABASE ${this.pgVectorDatabaseName};`, undefined);
+    this.runQuery('CREATE EXTENSION IF NOT EXISTS vector;', this.pgVectorDatabaseName);
   }
 
   private runQuery(sql: string, database: string | undefined) {

@@ -1,2 +1,2 @@
 FROM langgenius/dify-sandbox
-RUN mkdir /dependencies && touch /dependencies/python-requirements.txt
+COPY ./sandbox-python-requirements.txt /dependencies/python-requirements.txt

@@ -33,8 +33,8 @@ export class Redis extends Construct implements ec2.IConnectable {
 
     const secret = new Secret(this, 'AuthToken', {
       generateSecretString: {
-        passwordLength: 30, // Oracle password cannot have more than 30 characters
-        excludeCharacters: ' %+~`#$&*()|[]{}:;<>?!\'/@"\\',
+        passwordLength: 30,
+        excludePunctuation: true,
       },
     });
 
@@ -42,6 +42,7 @@ export class Redis extends Construct implements ec2.IConnectable {
       engine: 'Redis',
       cacheNodeType: 'cache.t4g.micro',
       engineVersion: '7.1',
+      port: this.port,
       replicasPerNodeGroup: 1,
       numNodeGroups: 1,
       replicationGroupDescription: 'dify redis cluster',
@@ -61,7 +62,5 @@ export class Redis extends Construct implements ec2.IConnectable {
 
     this.connections = new ec2.Connections({ securityGroups: [securityGroup], defaultPort: ec2.Port.tcp(this.port) });
     this.secret = secret;
-
-    new CfnOutput(this, 'RedisEndpoint', { value: redis.attrPrimaryEndPointAddress });
   }
 }

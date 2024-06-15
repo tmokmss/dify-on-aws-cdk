@@ -1,31 +1,27 @@
 import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
-import { ApplicationListener, ApplicationProtocol, ApplicationTargetGroup, ListenerCondition } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Construct } from 'constructs';
 import { Duration, aws_ecs as ecs } from 'aws-cdk-lib';
-import { IVpc } from 'aws-cdk-lib/aws-ec2';
-import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import { INamespace } from 'aws-cdk-lib/aws-servicediscovery';
-import { ApiGateway } from '../api-gateway';
+import { Port } from 'aws-cdk-lib/aws-ec2';
+import { ApiGateway } from '../api/api-gateway';
 
-export interface SampleAppServiceProps {
+export interface WebServiceProps {
   cluster: ICluster;
-  vpc: IVpc;
-  albUrl: string;
-  listener: ApplicationListener;
   apigw: ApiGateway;
 
   /**
-   * If set to true, add an ADOT sidecar
+   * If true, enable debug outputs
    * @default false
    */
-  enableAdot?: boolean;
+  debug?: boolean;
 }
 
 export class WebService extends Construct {
-  constructor(scope: Construct, id: string, props: SampleAppServiceProps) {
+  constructor(scope: Construct, id: string, props: WebServiceProps) {
     super(scope, id);
 
-    const { vpc, cluster, listener, albUrl, apigw } = props;
+    const { cluster, apigw, debug = false } = props;
+    const mappingName = 'web';
+    const port = 3000;
 
     const taskDefinition = new FargateTaskDefinition(this, 'Task', {
       cpu: 256,
@@ -38,30 +34,36 @@ export class WebService extends Construct {
       environment: {
         MODE: 'api',
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
-        LOG_LEVEL: 'DEBUG',
+        LOG_LEVEL: debug ? 'DEBUG' : 'ERROR',
         // enable DEBUG mode to output more logs
-        DEBUG: 'true',
+        DEBUG: debug ? 'true' : 'false',
+
         // The base URL of console application api server, refers to the Console base URL of WEB service if console domain is different from api or web app domain.
         // example: http://cloud.dify.ai
-        CONSOLE_API_URL: albUrl,
+        CONSOLE_API_URL: apigw.url,
         // The URL prefix for Web APP frontend, refers to the Web App base URL of WEB service if web app domain is different from console or api domain.
         // example: http://udify.app
-        APP_API_URL: albUrl,
+        APP_API_URL: apigw.url,
+
+        // Set host to 0.0.0.0 seems necessary for ECS Service Connect to work.
+        // https://nextjs.org/docs/pages/api-reference/next-config-js/output
+        HOSTNAME: '0.0.0.0',
+        PORT: port.toString(),
       },
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: 'log',
       }),
-      portMappings: [{ containerPort: 3000, name: 'web' }],
-      // healthCheck: {
-      //   command: ['CMD-SHELL', 'curl -f http://localhost:3000/ || exit 1'],
-      //   interval: Duration.seconds(15),
-      //   startPeriod: Duration.seconds(30),
-      //   timeout: Duration.seconds(5),
-      //   retries: 3,
-      // },
+      portMappings: [{ containerPort: port, name: mappingName }],
+      healthCheck: {
+        // use wget instead of curl due to alpine: https://stackoverflow.com/questions/47722898/how-can-i-make-a-docker-healthcheck-with-wget-instead-of-curl
+        command: ['CMD-SHELL', `wget --no-verbose --tries=1 --spider http://localhost:${port}/ || exit 1`],
+        interval: Duration.seconds(15),
+        startPeriod: Duration.seconds(30),
+        timeout: Duration.seconds(5),
+        retries: 3,
+      },
     });
 
-    // Service
     const service = new ecs.FargateService(this, 'FargateService', {
       cluster,
       taskDefinition,
@@ -75,31 +77,21 @@ export class WebService extends Construct {
           weight: 1,
         },
       ],
+      serviceConnectConfiguration: {
+        services: [
+          {
+            portMappingName: mappingName,
+          },
+        ],
+        logDriver: ecs.LogDriver.awsLogs({
+          streamPrefix: 'log',
+        }),
+      },
       enableExecuteCommand: true,
     });
+    service.node.addDependency(cluster.defaultCloudMapNamespace!);
+    service.connections.allowFrom(apigw, Port.tcp(port));
 
-    apigw.addService('Web', service, '/*', 3000);
-
-    return;
-    const group = new ApplicationTargetGroup(this, 'Group', {
-      vpc,
-      targets: [service],
-      protocol: ApplicationProtocol.HTTP,
-      deregistrationDelay: Duration.seconds(10),
-      port: 3000,
-      healthCheck: {
-        path: '/',
-        healthyHttpCodes: '200-299,307',
-        interval: Duration.seconds(15),
-        healthyThresholdCount: 2,
-        unhealthyThresholdCount: 5,
-      },
-    });
-
-    listener.addTargetGroups('Web', {
-      targetGroups: [group],
-      conditions: [ListenerCondition.pathPatterns(['/*'])],
-      priority: 13,
-    });
+    apigw.addService(mappingName, service, ['/*']);
   }
 }
