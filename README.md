@@ -1,5 +1,7 @@
 # Dify on AWS with CDK
 
+[![Build](https://github.com/tmokmss/dify-on-aws-cdk/actions/workflows/build.yml/badge.svg)](https://github.com/tmokmss/dify-on-aws-cdk/actions/workflows/build.yml)
+
 Deploy [Dify](https://dify.ai/), an LLM app development platform, using AWS managed services with AWS CDK.
 
 ![architecture](./imgs/architecture.png)
