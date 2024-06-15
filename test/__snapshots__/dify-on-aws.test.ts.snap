@@ -1,0 +1,3974 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Snapshot test 1`] = `
+{
+  "Outputs": {
+    "ApiGatewayApiEndpoint015055E7": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ApiGateway0CD2A757",
+          "ApiEndpoint",
+        ],
+      },
+    },
+  },
+  "Parameters": {
+    "BootstrapVersion": {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": {
+    "AWS679f53fac002430cb0da5b7982bd22872D164C4C": {
+      "DependsOn": [
+        "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleDefaultPolicyD28E1A5E",
+        "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "97f30e67419a1676a2215492723e5add1aa491caf0cbe2dd878fc4fab0468cd4.zip",
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Timeout": 120,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleDefaultPolicyD28E1A5E": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+            },
+            {
+              "Action": [
+                "rds-data:BatchExecuteStatement",
+                "rds-data:BeginTransaction",
+                "rds-data:CommitTransaction",
+                "rds-data:ExecuteStatement",
+                "rds-data:RollbackTransaction",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":rds:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":cluster:",
+                    {
+                      "Ref": "PostgresCluster53E5BDAB",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleDefaultPolicyD28E1A5E",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApiGateway0CD2A757": {
+      "Properties": {
+        "Name": "DifyApiGateway",
+        "ProtocolType": "HTTP",
+      },
+      "Type": "AWS::ApiGatewayV2::Api",
+    },
+    "ApiGatewayANYapi4E533A0D": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYapiC43FF7D5": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /api",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYapi4E533A0D",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYapiproxy4C528FE7": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /api/{proxy+}",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYapiproxyapiB94912C7",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYapiproxyapiB94912C7": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYconsoleapi192C07C6": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /console/api",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYconsoleapi90E1CDB0",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYconsoleapi90E1CDB0": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYconsoleapiproxy11D3A61B": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /console/api/{proxy+}",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYconsoleapiproxyapiB8D50A30",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYconsoleapiproxyapiB8D50A30": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYfiles528734A7": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /files",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYfilesapi958E3C88",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYfilesapi958E3C88": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYfilesproxy4E6AA40A": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /files/{proxy+}",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYfilesproxyapi1B8B020F",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYfilesproxyapi1B8B020F": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYproxyE1A02043": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /{proxy+}",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYproxywebB8E2DEDD",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYproxywebB8E2DEDD": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultwebC0DFCB82",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYv1A8EDEBBB": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /v1",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYv1apiE8426147",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYv1apiE8426147": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayANYv1proxy78B3E293": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer8E9D45B5",
+        },
+        "RouteKey": "ANY /v1/{proxy+}",
+        "Target": {
+          "Fn::Join": [
+            "",
+            [
+              "integrations/",
+              {
+                "Ref": "ApiGatewayANYv1proxyapiF5C7BA25",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::ApiGatewayV2::Route",
+    },
+    "ApiGatewayANYv1proxyapiF5C7BA25": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "ConnectionId": {
+          "Ref": "ApiGatewayVpcLink01954B77",
+        },
+        "ConnectionType": "VPC_LINK",
+        "IntegrationMethod": "ANY",
+        "IntegrationType": "HTTP_PROXY",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "ApiGatewayGetServiceArnResultapi92EB820A",
+            "serviceArn",
+          ],
+        },
+        "PayloadFormatVersion": "1.0",
+      },
+      "Type": "AWS::ApiGatewayV2::Integration",
+    },
+    "ApiGatewayAuthHandler7FF0321E": {
+      "DependsOn": [
+        "ApiGatewayAuthHandlerServiceRole3A673D26",
+      ],
+      "Properties": {
+        "Architectures": [
+          "arm64",
+        ],
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "dbc97732e7f1e6d5d0cb50517ac3772b7a99d74fc502ac812ea4154c6c4e9f30.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "ALLOWED_CIDRS": "0.0.0.0/0",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "ApiGatewayAuthHandlerServiceRole3A673D26",
+            "Arn",
+          ],
+        },
+        "Runtime": "provided.al2023",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "ApiGatewayAuthHandlerServiceRole3A673D26": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiGatewayAuthorizer8E9D45B5": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AuthorizerPayloadFormatVersion": "1.0",
+        "AuthorizerResultTtlInSeconds": 0,
+        "AuthorizerType": "REQUEST",
+        "AuthorizerUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
+                  "ApiGatewayAuthHandler7FF0321E",
+                  "Arn",
+                ],
+              },
+              "/invocations",
+            ],
+          ],
+        },
+        "IdentitySource": [],
+        "Name": "Authorizer",
+      },
+      "Type": "AWS::ApiGatewayV2::Authorizer",
+    },
+    "ApiGatewayDefaultStage49301567": {
+      "Properties": {
+        "ApiId": {
+          "Ref": "ApiGateway0CD2A757",
+        },
+        "AutoDeploy": true,
+        "StageName": "$default",
+      },
+      "Type": "AWS::ApiGatewayV2::Stage",
+    },
+    "ApiGatewayGetServiceArnResultapi92EB820A": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "ApiServiceFargateServiceLogGroup3003D3DE",
+        "ApiServiceFargateServiceSecurityGroupfromTestStackApiGatewaySecurityGroup37A959545001145AAC82",
+        "ApiServiceFargateServiceSecurityGroupE31C96C6",
+        "ApiServiceFargateServiceE4EA9E4E",
+      ],
+      "Properties": {
+        "NamespaceId": {
+          "Fn::GetAtt": [
+            "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+            "Id",
+          ],
+        },
+        "ServiceName": "api",
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ff70E63C36",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::GetServiceArn",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ApiGatewayGetServiceArnResultwebC0DFCB82": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "WebServiceFargateServiceLogGroupB7C3545C",
+        "WebServiceFargateServiceSecurityGroupfromTestStackApiGatewaySecurityGroup37A959543000961A1C76",
+        "WebServiceFargateServiceSecurityGroup60FE78D6",
+        "WebServiceFargateService5BB9529D",
+      ],
+      "Properties": {
+        "NamespaceId": {
+          "Fn::GetAtt": [
+            "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+            "Id",
+          ],
+        },
+        "ServiceName": "web",
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ff70E63C36",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::GetServiceArn",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ApiGatewaySecurityGroup5DC535E1": {
+      "Properties": {
+        "GroupDescription": "TestStack/ApiGateway/SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "ApiGatewayTestStackApiGatewayAuthorizerF1DF4D64PermissionD7C9309C": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ApiGatewayAuthHandler7FF0321E",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              {
+                "Ref": "ApiGateway0CD2A757",
+              },
+              "/authorizers/",
+              {
+                "Ref": "ApiGatewayAuthorizer8E9D45B5",
+              },
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "ApiGatewayVpcLink01954B77": {
+      "Properties": {
+        "Name": "TestStackApiGatewayVpcLinkCD7E9DD1",
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "ApiGatewaySecurityGroup5DC535E1",
+              "GroupId",
+            ],
+          },
+        ],
+        "SubnetIds": [
+          {
+            "Ref": "VpcPrivateSubnet1Subnet536B997A",
+          },
+          {
+            "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+          },
+        ],
+      },
+      "Type": "AWS::ApiGatewayV2::VpcLink",
+    },
+    "ApiServiceEncryptionSecretF73F9ECD": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "GenerateSecretString": {
+          "PasswordLength": 42,
+        },
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "ApiServiceFargateServiceE4EA9E4E": {
+      "DependsOn": [
+        "ApiServiceTaskTaskRoleDefaultPolicy982AD2DC",
+        "ApiServiceTaskTaskRole06F87EBE",
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+      ],
+      "Properties": {
+        "CapacityProviderStrategy": [
+          {
+            "CapacityProvider": "FARGATE",
+            "Weight": 0,
+          },
+          {
+            "CapacityProvider": "FARGATE_SPOT",
+            "Weight": 1,
+          },
+        ],
+        "Cluster": {
+          "Ref": "ClusterEB0386A7",
+        },
+        "DeploymentConfiguration": {
+          "Alarms": {
+            "AlarmNames": [],
+            "Enable": false,
+            "Rollback": false,
+          },
+          "MaximumPercent": 200,
+          "MinimumHealthyPercent": 50,
+        },
+        "EnableECSManagedTags": false,
+        "EnableExecuteCommand": true,
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "SecurityGroups": [
+              {
+                "Fn::GetAtt": [
+                  "ApiServiceFargateServiceSecurityGroupE31C96C6",
+                  "GroupId",
+                ],
+              },
+            ],
+            "Subnets": [
+              {
+                "Ref": "VpcPrivateSubnet1Subnet536B997A",
+              },
+              {
+                "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+              },
+            ],
+          },
+        },
+        "ServiceConnectConfiguration": {
+          "Enabled": true,
+          "LogConfiguration": {
+            "LogDriver": "awslogs",
+            "Options": {
+              "awslogs-group": {
+                "Ref": "ApiServiceFargateServiceLogGroup3003D3DE",
+              },
+              "awslogs-region": {
+                "Ref": "AWS::Region",
+              },
+              "awslogs-stream-prefix": "log",
+            },
+          },
+          "Namespace": "dify",
+          "Services": [
+            {
+              "ClientAliases": [
+                {
+                  "Port": 5001,
+                },
+              ],
+              "PortName": "api",
+            },
+          ],
+        },
+        "TaskDefinition": {
+          "Ref": "ApiServiceTask878B1807",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "ApiServiceFargateServiceLogGroup3003D3DE": {
+      "DeletionPolicy": "Retain",
+      "DependsOn": [
+        "ApiServiceTaskTaskRoleDefaultPolicy982AD2DC",
+        "ApiServiceTaskTaskRole06F87EBE",
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+      ],
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "ApiServiceFargateServiceSecurityGroupE31C96C6": {
+      "DependsOn": [
+        "ApiServiceTaskTaskRoleDefaultPolicy982AD2DC",
+        "ApiServiceTaskTaskRole06F87EBE",
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+      ],
+      "Properties": {
+        "GroupDescription": "TestStack/ApiService/FargateService/SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "ApiServiceFargateServiceSecurityGroupfromTestStackApiGatewaySecurityGroup37A959545001145AAC82": {
+      "DependsOn": [
+        "ApiServiceTaskTaskRoleDefaultPolicy982AD2DC",
+        "ApiServiceTaskTaskRole06F87EBE",
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+      ],
+      "Properties": {
+        "Description": "from TestStackApiGatewaySecurityGroup37A95954:5001",
+        "FromPort": 5001,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "ApiServiceFargateServiceSecurityGroupE31C96C6",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ApiGatewaySecurityGroup5DC535E1",
+            "GroupId",
+          ],
+        },
+        "ToPort": 5001,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "ApiServiceTask878B1807": {
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Environment": [
+              {
+                "Name": "MODE",
+                "Value": "api",
+              },
+              {
+                "Name": "LOG_LEVEL",
+                "Value": "ERROR",
+              },
+              {
+                "Name": "DEBUG",
+                "Value": "false",
+              },
+              {
+                "Name": "MIGRATION_ENABLED",
+                "Value": "true",
+              },
+              {
+                "Name": "CONSOLE_WEB_URL",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "ApiGateway0CD2A757",
+                    "ApiEndpoint",
+                  ],
+                },
+              },
+              {
+                "Name": "CONSOLE_API_URL",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "ApiGateway0CD2A757",
+                    "ApiEndpoint",
+                  ],
+                },
+              },
+              {
+                "Name": "SERVICE_API_URL",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "ApiGateway0CD2A757",
+                    "ApiEndpoint",
+                  ],
+                },
+              },
+              {
+                "Name": "APP_WEB_URL",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "ApiGateway0CD2A757",
+                    "ApiEndpoint",
+                  ],
+                },
+              },
+              {
+                "Name": "REDIS_HOST",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "RedisFF642DF2",
+                    "PrimaryEndPoint.Address",
+                  ],
+                },
+              },
+              {
+                "Name": "REDIS_PORT",
+                "Value": "6379",
+              },
+              {
+                "Name": "REDIS_USE_SSL",
+                "Value": "true",
+              },
+              {
+                "Name": "REDIS_DB",
+                "Value": "0",
+              },
+              {
+                "Name": "WEB_API_CORS_ALLOW_ORIGINS",
+                "Value": "*",
+              },
+              {
+                "Name": "CONSOLE_CORS_ALLOW_ORIGINS",
+                "Value": "*",
+              },
+              {
+                "Name": "STORAGE_TYPE",
+                "Value": "s3",
+              },
+              {
+                "Name": "S3_BUCKET_NAME",
+                "Value": {
+                  "Ref": "StorageBucket19DB2FF8",
+                },
+              },
+              {
+                "Name": "S3_REGION",
+                "Value": {
+                  "Ref": "AWS::Region",
+                },
+              },
+              {
+                "Name": "DB_DATABASE",
+                "Value": "main",
+              },
+              {
+                "Name": "VECTOR_STORE",
+                "Value": "pgvector",
+              },
+              {
+                "Name": "PGVECTOR_DATABASE",
+                "Value": "pgvector",
+              },
+              {
+                "Name": "CODE_EXECUTION_ENDPOINT",
+                "Value": "http://localhost:8194",
+              },
+            ],
+            "Essential": true,
+            "HealthCheck": {
+              "Command": [
+                "CMD-SHELL",
+                "curl -f http://localhost:5001/health || exit 1",
+              ],
+              "Interval": 15,
+              "Retries": 3,
+              "StartPeriod": 30,
+              "Timeout": 5,
+            },
+            "Image": "langgenius/dify-api",
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "ApiServiceTaskMainLogGroup4A8BF33F",
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "log",
+              },
+            },
+            "Name": "Main",
+            "PortMappings": [
+              {
+                "ContainerPort": 5001,
+                "Name": "api",
+                "Protocol": "tcp",
+              },
+            ],
+            "Secrets": [
+              {
+                "Name": "DB_USERNAME",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":username::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "DB_HOST",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":host::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "DB_PORT",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":port::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "DB_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":password::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_USER",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":username::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_HOST",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":host::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_PORT",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":port::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":password::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "REDIS_PASSWORD",
+                "ValueFrom": {
+                  "Ref": "RedisAuthToken9E34F6A5",
+                },
+              },
+              {
+                "Name": "CELERY_BROKER_URL",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":ssm:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":parameter/",
+                      {
+                        "Ref": "RedisBrokerUrlA8582E06",
+                      },
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "SECRET_KEY",
+                "ValueFrom": {
+                  "Ref": "ApiServiceEncryptionSecretF73F9ECD",
+                },
+              },
+              {
+                "Name": "CODE_EXECUTION_API_KEY",
+                "ValueFrom": {
+                  "Ref": "ApiServiceEncryptionSecretF73F9ECD",
+                },
+              },
+            ],
+          },
+          {
+            "Environment": [
+              {
+                "Name": "GIN_MODE",
+                "Value": "release",
+              },
+              {
+                "Name": "WORKER_TIMEOUT",
+                "Value": "15",
+              },
+              {
+                "Name": "ENABLE_NETWORK",
+                "Value": "true",
+              },
+            ],
+            "Essential": true,
+            "Image": {
+              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:59883cc5fd63a0f1d3351e359dfb881d59ff4adf57ebb876397c613a07fae09c",
+            },
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "ApiServiceTaskSandboxLogGroupDDF292A0",
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "log",
+              },
+            },
+            "Name": "Sandbox",
+            "PortMappings": [
+              {
+                "ContainerPort": 8194,
+                "Protocol": "tcp",
+              },
+            ],
+            "Secrets": [
+              {
+                "Name": "API_KEY",
+                "ValueFrom": {
+                  "Ref": "ApiServiceEncryptionSecretF73F9ECD",
+                },
+              },
+            ],
+          },
+        ],
+        "Cpu": "1024",
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "ApiServiceTaskExecutionRoleFE812553",
+            "Arn",
+          ],
+        },
+        "Family": "TestStackApiServiceTaskBFA8CBF7",
+        "Memory": "2048",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE",
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "ApiServiceTaskTaskRole06F87EBE",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::ECS::TaskDefinition",
+    },
+    "ApiServiceTaskExecutionRoleDefaultPolicy38AB6296": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ApiServiceTaskMainLogGroup4A8BF33F",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "RedisAuthToken9E34F6A5",
+              },
+            },
+            {
+              "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/",
+                    {
+                      "Ref": "RedisBrokerUrlA8582E06",
+                    },
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "ApiServiceEncryptionSecretF73F9ECD",
+              },
+            },
+            {
+              "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":ecr:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":repository/",
+                    {
+                      "Fn::Sub": "cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}",
+                    },
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": "ecr:GetAuthorizationToken",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ApiServiceTaskSandboxLogGroupDDF292A0",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "ApiServiceFargateServiceLogGroup3003D3DE",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApiServiceTaskExecutionRoleDefaultPolicy38AB6296",
+        "Roles": [
+          {
+            "Ref": "ApiServiceTaskExecutionRoleFE812553",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ApiServiceTaskExecutionRoleFE812553": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiServiceTaskMainLogGroup4A8BF33F": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "ApiServiceTaskSandboxLogGroupDDF292A0": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "ApiServiceTaskTaskRole06F87EBE": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "ApiServiceTaskTaskRoleDefaultPolicy982AD2DC": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageBucket19DB2FF8",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageBucket19DB2FF8",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": "logs:DescribeLogGroups",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "ApiServiceTaskTaskRoleDefaultPolicy982AD2DC",
+        "Roles": [
+          {
+            "Ref": "ApiServiceTaskTaskRole06F87EBE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "ClusterDefaultServiceDiscoveryNamespaceC336F9B4": {
+      "Properties": {
+        "Name": "dify",
+      },
+      "Type": "AWS::ServiceDiscovery::HttpNamespace",
+    },
+    "ClusterEB0386A7": {
+      "Properties": {
+        "ClusterSettings": [
+          {
+            "Name": "containerInsights",
+            "Value": "enabled",
+          },
+        ],
+        "ServiceConnectDefaults": {
+          "Namespace": {
+            "Fn::GetAtt": [
+              "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+              "Arn",
+            ],
+          },
+        },
+      },
+      "Type": "AWS::ECS::Cluster",
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F": {
+      "DependsOn": [
+        "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "2eb6a831b107939f63cfebf68e6316e1a40f79fc99cae0fee9b333bac8d29bc4.zip",
+        },
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Lambda function for auto-deleting objects in ",
+              {
+                "Ref": "StorageBucket19DB2FF8",
+              },
+              " S3 bucket.",
+            ],
+          ],
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Sub": "arn:\${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "PostgresCluster53E5BDAB": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "CopyTagsToSnapshot": true,
+        "DBClusterParameterGroupName": "default.aurora-postgresql15",
+        "DBSubnetGroupName": {
+          "Ref": "PostgresClusterSubnets99BD7A61",
+        },
+        "DatabaseName": "main",
+        "EnableHttpEndpoint": true,
+        "Engine": "aurora-postgresql",
+        "EngineVersion": "15.5",
+        "MasterUserPassword": {
+          "Fn::Join": [
+            "",
+            [
+              "{{resolve:secretsmanager:",
+              {
+                "Ref": "PostgresClusterSecretC5EAFDEC",
+              },
+              ":SecretString:password::}}",
+            ],
+          ],
+        },
+        "MasterUsername": {
+          "Fn::Join": [
+            "",
+            [
+              "{{resolve:secretsmanager:",
+              {
+                "Ref": "PostgresClusterSecretC5EAFDEC",
+              },
+              ":SecretString:username::}}",
+            ],
+          ],
+        },
+        "Port": 5432,
+        "ServerlessV2ScalingConfiguration": {
+          "MaxCapacity": 2,
+          "MinCapacity": 0.5,
+        },
+        "StorageEncrypted": true,
+        "VpcSecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "PostgresClusterSecurityGroup08DE6EE8",
+              "GroupId",
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::RDS::DBCluster",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "PostgresClusterSecretAttachment8DDCF2A8": {
+      "Properties": {
+        "SecretId": {
+          "Ref": "PostgresClusterSecretC5EAFDEC",
+        },
+        "TargetId": {
+          "Ref": "PostgresCluster53E5BDAB",
+        },
+        "TargetType": "AWS::RDS::DBCluster",
+      },
+      "Type": "AWS::SecretsManager::SecretTargetAttachment",
+    },
+    "PostgresClusterSecretC5EAFDEC": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Description": {
+          "Fn::Join": [
+            "",
+            [
+              "Generated by the CDK for stack: ",
+              {
+                "Ref": "AWS::StackName",
+              },
+            ],
+          ],
+        },
+        "GenerateSecretString": {
+          "ExcludeCharacters": " %+~\`#$&*()|[]{}:;<>?!'/@"\\",
+          "GenerateStringKey": "password",
+          "PasswordLength": 30,
+          "SecretStringTemplate": "{"username":"postgres"}",
+        },
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "PostgresClusterSecurityGroup08DE6EE8": {
+      "Properties": {
+        "GroupDescription": "RDS security group",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "PostgresClusterSecurityGroupfromTestStackApiServiceFargateServiceSecurityGroup7DD0AF44IndirectPort6FBE377A": {
+      "Properties": {
+        "Description": "from TestStackApiServiceFargateServiceSecurityGroup7DD0AF44:{IndirectPort}",
+        "FromPort": {
+          "Fn::GetAtt": [
+            "PostgresCluster53E5BDAB",
+            "Endpoint.Port",
+          ],
+        },
+        "GroupId": {
+          "Fn::GetAtt": [
+            "PostgresClusterSecurityGroup08DE6EE8",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ApiServiceFargateServiceSecurityGroupE31C96C6",
+            "GroupId",
+          ],
+        },
+        "ToPort": {
+          "Fn::GetAtt": [
+            "PostgresCluster53E5BDAB",
+            "Endpoint.Port",
+          ],
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "PostgresClusterSecurityGroupfromTestStackWorkerServiceFargateServiceSecurityGroup3259E932IndirectPort6C372135": {
+      "Properties": {
+        "Description": "from TestStackWorkerServiceFargateServiceSecurityGroup3259E932:{IndirectPort}",
+        "FromPort": {
+          "Fn::GetAtt": [
+            "PostgresCluster53E5BDAB",
+            "Endpoint.Port",
+          ],
+        },
+        "GroupId": {
+          "Fn::GetAtt": [
+            "PostgresClusterSecurityGroup08DE6EE8",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "WorkerServiceFargateServiceSecurityGroupEC8152E8",
+            "GroupId",
+          ],
+        },
+        "ToPort": {
+          "Fn::GetAtt": [
+            "PostgresCluster53E5BDAB",
+            "Endpoint.Port",
+          ],
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "PostgresClusterSubnets99BD7A61": {
+      "Properties": {
+        "DBSubnetGroupDescription": "Subnets for Cluster database",
+        "SubnetIds": [
+          {
+            "Ref": "VpcPrivateSubnet1Subnet536B997A",
+          },
+          {
+            "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+          },
+        ],
+      },
+      "Type": "AWS::RDS::DBSubnetGroup",
+    },
+    "PostgresClusterWriterF88DD8CC": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "VpcPrivateSubnet1DefaultRouteBE02A9ED",
+        "VpcPrivateSubnet1RouteTableAssociation70C59FA6",
+        "VpcPrivateSubnet2DefaultRoute060D2087",
+        "VpcPrivateSubnet2RouteTableAssociationA89CAD56",
+      ],
+      "Properties": {
+        "AutoMinorVersionUpgrade": true,
+        "DBClusterIdentifier": {
+          "Ref": "PostgresCluster53E5BDAB",
+        },
+        "DBInstanceClass": "db.serverless",
+        "Engine": "aurora-postgresql",
+        "PromotionTier": 0,
+        "PubliclyAccessible": false,
+      },
+      "Type": "AWS::RDS::DBInstance",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "PostgresQuery0CustomResourcePolicy41175230": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "rds-data:ExecuteStatement",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":rds:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":cluster:",
+                    {
+                      "Ref": "PostgresCluster53E5BDAB",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "PostgresQuery0CustomResourcePolicy41175230",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "PostgresQuery0FD53F567": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "PostgresQuery0CustomResourcePolicy41175230",
+        "PostgresWaitForHttpEndpointReady6D04AFAC",
+      ],
+      "Properties": {
+        "Create": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"rds-data","action":"ExecuteStatement","parameters":{"resourceArn":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              "","secretArn":"",
+              {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+              "","sql":"CREATE DATABASE pgvector;"},"physicalResourceId":{"id":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              ""}}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": true,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+        "Update": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"rds-data","action":"ExecuteStatement","parameters":{"resourceArn":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              "","secretArn":"",
+              {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+              "","sql":"CREATE DATABASE pgvector;"},"physicalResourceId":{"id":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              ""}}",
+            ],
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "PostgresQuery1B175C979": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "PostgresQuery0FD53F567",
+        "PostgresQuery1CustomResourcePolicy1E34BE89",
+      ],
+      "Properties": {
+        "Create": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"rds-data","action":"ExecuteStatement","parameters":{"resourceArn":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              "","secretArn":"",
+              {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+              "","database":"pgvector","sql":"CREATE EXTENSION IF NOT EXISTS vector;"},"physicalResourceId":{"id":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              ""}}",
+            ],
+          ],
+        },
+        "InstallLatestAwsSdk": true,
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AWS679f53fac002430cb0da5b7982bd22872D164C4C",
+            "Arn",
+          ],
+        },
+        "Update": {
+          "Fn::Join": [
+            "",
+            [
+              "{"service":"rds-data","action":"ExecuteStatement","parameters":{"resourceArn":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              "","secretArn":"",
+              {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+              "","database":"pgvector","sql":"CREATE EXTENSION IF NOT EXISTS vector;"},"physicalResourceId":{"id":"arn:",
+              {
+                "Ref": "AWS::Partition",
+              },
+              ":rds:",
+              {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId",
+              },
+              ":cluster:",
+              {
+                "Ref": "PostgresCluster53E5BDAB",
+              },
+              ""}}",
+            ],
+          ],
+        },
+      },
+      "Type": "Custom::AWS",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "PostgresQuery1CustomResourcePolicy1E34BE89": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "rds-data:ExecuteStatement",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":rds:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":cluster:",
+                    {
+                      "Ref": "PostgresCluster53E5BDAB",
+                    },
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "PostgresQuery1CustomResourcePolicy1E34BE89",
+        "Roles": [
+          {
+            "Ref": "AWS679f53fac002430cb0da5b7982bd2287ServiceRoleC1EA0FF2",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "PostgresWaitForHttpEndpointReady6D04AFAC": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "PostgresClusterWriterF88DD8CC",
+      ],
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "TimeSleepCustomResourceHandler494c1b460d2f4e3b9bfd0b2cf10162f981117264",
+            "Arn",
+          ],
+        },
+        "createDurationSeconds": 60,
+        "destroyDurationSeconds": 0,
+      },
+      "Type": "Custom::TimeSleep",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RedisAuthToken9E34F6A5": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "GenerateSecretString": {
+          "ExcludePunctuation": true,
+          "PasswordLength": 30,
+        },
+      },
+      "Type": "AWS::SecretsManager::Secret",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "RedisBrokerUrlA8582E06": {
+      "Properties": {
+        "Type": "String",
+        "Value": {
+          "Fn::Join": [
+            "",
+            [
+              "rediss://:{{resolve:secretsmanager:",
+              {
+                "Ref": "RedisAuthToken9E34F6A5",
+              },
+              ":SecretString:::}}@",
+              {
+                "Fn::GetAtt": [
+                  "RedisFF642DF2",
+                  "PrimaryEndPoint.Address",
+                ],
+              },
+              ":6379/1",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::SSM::Parameter",
+    },
+    "RedisFF642DF2": {
+      "Properties": {
+        "AtRestEncryptionEnabled": true,
+        "AuthToken": {
+          "Fn::Join": [
+            "",
+            [
+              "{{resolve:secretsmanager:",
+              {
+                "Ref": "RedisAuthToken9E34F6A5",
+              },
+              ":SecretString:::}}",
+            ],
+          ],
+        },
+        "CacheNodeType": "cache.t4g.micro",
+        "CacheSubnetGroupName": {
+          "Ref": "RedisSubnetGroup2387CBFF",
+        },
+        "Engine": "Redis",
+        "EngineVersion": "7.1",
+        "MultiAZEnabled": true,
+        "NumNodeGroups": 1,
+        "Port": 6379,
+        "ReplicasPerNodeGroup": 1,
+        "ReplicationGroupDescription": "dify redis cluster",
+        "SecurityGroupIds": [
+          {
+            "Fn::GetAtt": [
+              "RedisSecurityGroupC1E9FD21",
+              "GroupId",
+            ],
+          },
+        ],
+        "TransitEncryptionEnabled": true,
+      },
+      "Type": "AWS::ElastiCache::ReplicationGroup",
+    },
+    "RedisSecurityGroupC1E9FD21": {
+      "Properties": {
+        "GroupDescription": "TestStack/Redis/SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "RedisSecurityGroupfromTestStackApiServiceFargateServiceSecurityGroup7DD0AF446379F9E0F455": {
+      "Properties": {
+        "Description": "from TestStackApiServiceFargateServiceSecurityGroup7DD0AF44:6379",
+        "FromPort": 6379,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "RedisSecurityGroupC1E9FD21",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ApiServiceFargateServiceSecurityGroupE31C96C6",
+            "GroupId",
+          ],
+        },
+        "ToPort": 6379,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "RedisSecurityGroupfromTestStackWorkerServiceFargateServiceSecurityGroup3259E93263795D7BE143": {
+      "Properties": {
+        "Description": "from TestStackWorkerServiceFargateServiceSecurityGroup3259E932:6379",
+        "FromPort": 6379,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "RedisSecurityGroupC1E9FD21",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "WorkerServiceFargateServiceSecurityGroupEC8152E8",
+            "GroupId",
+          ],
+        },
+        "ToPort": 6379,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "RedisSubnetGroup2387CBFF": {
+      "Properties": {
+        "Description": "private subnet",
+        "SubnetIds": [
+          {
+            "Ref": "VpcPrivateSubnet1Subnet536B997A",
+          },
+          {
+            "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+          },
+        ],
+      },
+      "Type": "AWS::ElastiCache::SubnetGroup",
+    },
+    "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ff70E63C36": {
+      "DependsOn": [
+        "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleDefaultPolicy18F5C3C7",
+        "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleEB257F4C",
+      ],
+      "Properties": {
+        "Code": {
+          "ZipFile": "
+const response = require('cfn-response');
+const sdk = require('@aws-sdk/client-servicediscovery');
+const client = new sdk.ServiceDiscoveryClient();
+
+exports.handler = async function (event, context) {
+  try {
+    console.log(event);
+    if (event.RequestType == 'Delete') {
+      return await response.send(event, context, response.SUCCESS);
+    }
+    // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/servicediscovery/command/ListServicesCommand/
+    const namespaceId = event.ResourceProperties.NamespaceId;
+    const serviceName = event.ResourceProperties.ServiceName;
+    const command = new sdk.ListServicesCommand({
+      Filters: [
+        {
+          Name: "NAMESPACE_ID",
+          Values: [
+            namespaceId,
+          ],
+          Condition: "EQ",
+        },
+      ],
+    });
+    const res = await client.send(command);
+    const service = res.Services.find(service => service.Name == serviceName);
+    if (service == null) {
+      throw new Error('Service not found.');
+    }
+    await response.send(event, context, response.SUCCESS, { serviceArn: service.Arn }, service.Id);
+  } catch (e) {
+    console.log(e);
+    await response.send(event, context, response.FAILED);
+  }
+};
+",
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleEB257F4C",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs20.x",
+        "Timeout": 30,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleDefaultPolicy18F5C3C7": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "servicediscovery:ListServices",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleDefaultPolicy18F5C3C7",
+        "Roles": [
+          {
+            "Ref": "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleEB257F4C",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "SingletonLambda82ebb9e7ed954f5bbd5c584d8c1ff2ffServiceRoleEB257F4C": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "StorageBucket19DB2FF8": {
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true,
+        },
+        "Tags": [
+          {
+            "Key": "aws-cdk:auto-delete-objects",
+            "Value": "true",
+          },
+        ],
+      },
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StorageBucketAutoDeleteObjectsCustomResource105C81BD": {
+      "DeletionPolicy": "Delete",
+      "DependsOn": [
+        "StorageBucketPolicy41A048DB",
+      ],
+      "Properties": {
+        "BucketName": {
+          "Ref": "StorageBucket19DB2FF8",
+        },
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "Custom::S3AutoDeleteObjects",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "StorageBucketPolicy41A048DB": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "StorageBucket19DB2FF8",
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                },
+              },
+              "Effect": "Deny",
+              "Principal": {
+                "AWS": "*",
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageBucket19DB2FF8",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageBucket19DB2FF8",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "s3:PutBucketPolicy",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+              ],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": [
+                    "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
+                    "Arn",
+                  ],
+                },
+              },
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageBucket19DB2FF8",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageBucket19DB2FF8",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::S3::BucketPolicy",
+    },
+    "TimeSleepCustomResourceHandler494c1b460d2f4e3b9bfd0b2cf10162f981117264": {
+      "DependsOn": [
+        "TimeSleepCustomResourceHandler494c1b460d2f4e3b9bfd0b2cf10162f9ServiceRole47E386BD",
+      ],
+      "Properties": {
+        "Code": {
+          "ZipFile": ""use strict";var o=Object.defineProperty;var n=Object.getOwnPropertyDescriptor;var d=Object.getOwnPropertyNames;var p=Object.prototype.hasOwnProperty;var u=(t,e)=>{for(var s in e)o(t,s,{get:e[s],enumerable:!0})},R=(t,e,s,a)=>{if(e&&typeof e=="object"||typeof e=="function")for(let r of d(e))!p.call(t,r)&&r!==s&&o(t,r,{get:()=>e[r],enumerable:!(a=n(e,r))||a.enumerable});return t};var S=t=>R(o({},"__esModule",{value:!0}),t);var l={};u(l,{handler:()=>g});module.exports=S(l);var c=require("timers/promises"),g=async(t,e)=>{try{switch(t.RequestType){case"Create":await(0,c.setTimeout)(t.ResourceProperties.createDurationSeconds*1e3);break;case"Update":break;case"Delete":await(0,c.setTimeout)(t.ResourceProperties.destroyDurationSeconds*1e3);break}await i("SUCCESS",t,e)}catch(s){console.log(s),await i("FAILED",t,e,s.message)}},i=async(t,e,s,a)=>{let r=JSON.stringify({Status:t,Reason:a??"See the details in CloudWatch Log Stream: "+s.logStreamName,PhysicalResourceId:s.logStreamName,StackId:e.StackId,RequestId:e.RequestId,LogicalResourceId:e.LogicalResourceId,NoEcho:!1,Data:{}});await fetch(e.ResponseURL,{method:"PUT",body:r,headers:{"Content-Type":"","Content-Length":r.length.toString()}})};0&&(module.exports={handler});
+",
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "TimeSleepCustomResourceHandler494c1b460d2f4e3b9bfd0b2cf10162f9ServiceRole47E386BD",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs18.x",
+        "Timeout": 900,
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "TimeSleepCustomResourceHandler494c1b460d2f4e3b9bfd0b2cf10162f9ServiceRole47E386BD": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "Vpc8378EB38": {
+      "Properties": {
+        "CidrBlock": "10.0.0.0/16",
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "InstanceTenancy": "default",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::VPC",
+    },
+    "VpcIGWD7BA715C": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::InternetGateway",
+    },
+    "VpcPrivateSubnet1DefaultRouteBE02A9ED": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "VpcPublicSubnet1NATGateway4D7517AA",
+        },
+        "RouteTableId": {
+          "Ref": "VpcPrivateSubnet1RouteTableB2C5B500",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcPrivateSubnet1RouteTableAssociation70C59FA6": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VpcPrivateSubnet1RouteTableB2C5B500",
+        },
+        "SubnetId": {
+          "Ref": "VpcPrivateSubnet1Subnet536B997A",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcPrivateSubnet1RouteTableB2C5B500": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PrivateSubnet1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcPrivateSubnet1Subnet536B997A": {
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.128.0/18",
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Private",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private",
+          },
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PrivateSubnet1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcPrivateSubnet2DefaultRoute060D2087": {
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {
+          "Ref": "VpcPublicSubnet2NATGateway9182C01D",
+        },
+        "RouteTableId": {
+          "Ref": "VpcPrivateSubnet2RouteTableA678073B",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcPrivateSubnet2RouteTableA678073B": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PrivateSubnet2",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcPrivateSubnet2RouteTableAssociationA89CAD56": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VpcPrivateSubnet2RouteTableA678073B",
+        },
+        "SubnetId": {
+          "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcPrivateSubnet2Subnet3788AAA1": {
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            1,
+            {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.192.0/18",
+        "MapPublicIpOnLaunch": false,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Private",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Private",
+          },
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PrivateSubnet2",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcPublicSubnet1DefaultRoute3DA9E72A": {
+      "DependsOn": [
+        "VpcVPCGWBF912B6E",
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "VpcIGWD7BA715C",
+        },
+        "RouteTableId": {
+          "Ref": "VpcPublicSubnet1RouteTable6C95E38E",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcPublicSubnet1EIPD7E02669": {
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet1",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::EIP",
+    },
+    "VpcPublicSubnet1NATGateway4D7517AA": {
+      "DependsOn": [
+        "VpcPublicSubnet1DefaultRoute3DA9E72A",
+        "VpcPublicSubnet1RouteTableAssociation97140677",
+      ],
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "VpcPublicSubnet1EIPD7E02669",
+            "AllocationId",
+          ],
+        },
+        "SubnetId": {
+          "Ref": "VpcPublicSubnet1Subnet5C2D37C4",
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet1",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::NatGateway",
+    },
+    "VpcPublicSubnet1RouteTable6C95E38E": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcPublicSubnet1RouteTableAssociation97140677": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VpcPublicSubnet1RouteTable6C95E38E",
+        },
+        "SubnetId": {
+          "Ref": "VpcPublicSubnet1Subnet5C2D37C4",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcPublicSubnet1Subnet5C2D37C4": {
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            0,
+            {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.0.0/18",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Public",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public",
+          },
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcPublicSubnet2DefaultRoute97F91067": {
+      "DependsOn": [
+        "VpcVPCGWBF912B6E",
+      ],
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {
+          "Ref": "VpcIGWD7BA715C",
+        },
+        "RouteTableId": {
+          "Ref": "VpcPublicSubnet2RouteTable94F7E489",
+        },
+      },
+      "Type": "AWS::EC2::Route",
+    },
+    "VpcPublicSubnet2EIP3C605A87": {
+      "Properties": {
+        "Domain": "vpc",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet2",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::EIP",
+    },
+    "VpcPublicSubnet2NATGateway9182C01D": {
+      "DependsOn": [
+        "VpcPublicSubnet2DefaultRoute97F91067",
+        "VpcPublicSubnet2RouteTableAssociationDD5762D8",
+      ],
+      "Properties": {
+        "AllocationId": {
+          "Fn::GetAtt": [
+            "VpcPublicSubnet2EIP3C605A87",
+            "AllocationId",
+          ],
+        },
+        "SubnetId": {
+          "Ref": "VpcPublicSubnet2Subnet691E08A3",
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet2",
+          },
+        ],
+      },
+      "Type": "AWS::EC2::NatGateway",
+    },
+    "VpcPublicSubnet2RouteTable94F7E489": {
+      "Properties": {
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet2",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::RouteTable",
+    },
+    "VpcPublicSubnet2RouteTableAssociationDD5762D8": {
+      "Properties": {
+        "RouteTableId": {
+          "Ref": "VpcPublicSubnet2RouteTable94F7E489",
+        },
+        "SubnetId": {
+          "Ref": "VpcPublicSubnet2Subnet691E08A3",
+        },
+      },
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+    },
+    "VpcPublicSubnet2Subnet691E08A3": {
+      "Properties": {
+        "AvailabilityZone": {
+          "Fn::Select": [
+            1,
+            {
+              "Fn::GetAZs": "",
+            },
+          ],
+        },
+        "CidrBlock": "10.0.64.0/18",
+        "MapPublicIpOnLaunch": true,
+        "Tags": [
+          {
+            "Key": "aws-cdk:subnet-name",
+            "Value": "Public",
+          },
+          {
+            "Key": "aws-cdk:subnet-type",
+            "Value": "Public",
+          },
+          {
+            "Key": "Name",
+            "Value": "TestStack/Vpc/PublicSubnet2",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::Subnet",
+    },
+    "VpcVPCGWBF912B6E": {
+      "Properties": {
+        "InternetGatewayId": {
+          "Ref": "VpcIGWD7BA715C",
+        },
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+    },
+    "WebServiceFargateService5BB9529D": {
+      "DependsOn": [
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+        "WebServiceTaskTaskRoleDefaultPolicyC2E32007",
+        "WebServiceTaskTaskRole22AA8FAB",
+      ],
+      "Properties": {
+        "CapacityProviderStrategy": [
+          {
+            "CapacityProvider": "FARGATE",
+            "Weight": 0,
+          },
+          {
+            "CapacityProvider": "FARGATE_SPOT",
+            "Weight": 1,
+          },
+        ],
+        "Cluster": {
+          "Ref": "ClusterEB0386A7",
+        },
+        "DeploymentConfiguration": {
+          "Alarms": {
+            "AlarmNames": [],
+            "Enable": false,
+            "Rollback": false,
+          },
+          "MaximumPercent": 200,
+          "MinimumHealthyPercent": 50,
+        },
+        "EnableECSManagedTags": false,
+        "EnableExecuteCommand": true,
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "SecurityGroups": [
+              {
+                "Fn::GetAtt": [
+                  "WebServiceFargateServiceSecurityGroup60FE78D6",
+                  "GroupId",
+                ],
+              },
+            ],
+            "Subnets": [
+              {
+                "Ref": "VpcPrivateSubnet1Subnet536B997A",
+              },
+              {
+                "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+              },
+            ],
+          },
+        },
+        "ServiceConnectConfiguration": {
+          "Enabled": true,
+          "LogConfiguration": {
+            "LogDriver": "awslogs",
+            "Options": {
+              "awslogs-group": {
+                "Ref": "WebServiceFargateServiceLogGroupB7C3545C",
+              },
+              "awslogs-region": {
+                "Ref": "AWS::Region",
+              },
+              "awslogs-stream-prefix": "log",
+            },
+          },
+          "Namespace": "dify",
+          "Services": [
+            {
+              "ClientAliases": [
+                {
+                  "Port": 3000,
+                },
+              ],
+              "PortName": "web",
+            },
+          ],
+        },
+        "TaskDefinition": {
+          "Ref": "WebServiceTaskF9926E9D",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "WebServiceFargateServiceLogGroupB7C3545C": {
+      "DeletionPolicy": "Retain",
+      "DependsOn": [
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+        "WebServiceTaskTaskRoleDefaultPolicyC2E32007",
+        "WebServiceTaskTaskRole22AA8FAB",
+      ],
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "WebServiceFargateServiceSecurityGroup60FE78D6": {
+      "DependsOn": [
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+        "WebServiceTaskTaskRoleDefaultPolicyC2E32007",
+        "WebServiceTaskTaskRole22AA8FAB",
+      ],
+      "Properties": {
+        "GroupDescription": "TestStack/WebService/FargateService/SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "WebServiceFargateServiceSecurityGroupfromTestStackApiGatewaySecurityGroup37A959543000961A1C76": {
+      "DependsOn": [
+        "ClusterDefaultServiceDiscoveryNamespaceC336F9B4",
+        "WebServiceTaskTaskRoleDefaultPolicyC2E32007",
+        "WebServiceTaskTaskRole22AA8FAB",
+      ],
+      "Properties": {
+        "Description": "from TestStackApiGatewaySecurityGroup37A95954:3000",
+        "FromPort": 3000,
+        "GroupId": {
+          "Fn::GetAtt": [
+            "WebServiceFargateServiceSecurityGroup60FE78D6",
+            "GroupId",
+          ],
+        },
+        "IpProtocol": "tcp",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ApiGatewaySecurityGroup5DC535E1",
+            "GroupId",
+          ],
+        },
+        "ToPort": 3000,
+      },
+      "Type": "AWS::EC2::SecurityGroupIngress",
+    },
+    "WebServiceTaskExecutionRole4406CA16": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WebServiceTaskExecutionRoleDefaultPolicyA297AC39": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "WebServiceTaskMainLogGroup38DB76FC",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "WebServiceFargateServiceLogGroupB7C3545C",
+                  "Arn",
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "WebServiceTaskExecutionRoleDefaultPolicyA297AC39",
+        "Roles": [
+          {
+            "Ref": "WebServiceTaskExecutionRole4406CA16",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "WebServiceTaskF9926E9D": {
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Environment": [
+              {
+                "Name": "MODE",
+                "Value": "api",
+              },
+              {
+                "Name": "LOG_LEVEL",
+                "Value": "ERROR",
+              },
+              {
+                "Name": "DEBUG",
+                "Value": "false",
+              },
+              {
+                "Name": "CONSOLE_API_URL",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "ApiGateway0CD2A757",
+                    "ApiEndpoint",
+                  ],
+                },
+              },
+              {
+                "Name": "APP_API_URL",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "ApiGateway0CD2A757",
+                    "ApiEndpoint",
+                  ],
+                },
+              },
+              {
+                "Name": "HOSTNAME",
+                "Value": "0.0.0.0",
+              },
+              {
+                "Name": "PORT",
+                "Value": "3000",
+              },
+            ],
+            "Essential": true,
+            "HealthCheck": {
+              "Command": [
+                "CMD-SHELL",
+                "wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1",
+              ],
+              "Interval": 15,
+              "Retries": 3,
+              "StartPeriod": 30,
+              "Timeout": 5,
+            },
+            "Image": "langgenius/dify-web",
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "WebServiceTaskMainLogGroup38DB76FC",
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "log",
+              },
+            },
+            "Name": "Main",
+            "PortMappings": [
+              {
+                "ContainerPort": 3000,
+                "Name": "web",
+                "Protocol": "tcp",
+              },
+            ],
+          },
+        ],
+        "Cpu": "256",
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "WebServiceTaskExecutionRole4406CA16",
+            "Arn",
+          ],
+        },
+        "Family": "TestStackWebServiceTaskBC1EE4DB",
+        "Memory": "512",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE",
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "WebServiceTaskTaskRole22AA8FAB",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::ECS::TaskDefinition",
+    },
+    "WebServiceTaskMainLogGroup38DB76FC": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "WebServiceTaskTaskRole22AA8FAB": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WebServiceTaskTaskRoleDefaultPolicyC2E32007": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": "logs:DescribeLogGroups",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "WebServiceTaskTaskRoleDefaultPolicyC2E32007",
+        "Roles": [
+          {
+            "Ref": "WebServiceTaskTaskRole22AA8FAB",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "WorkerServiceFargateService83FD39CB": {
+      "DependsOn": [
+        "WorkerServiceTaskTaskRoleDefaultPolicyB05718F5",
+        "WorkerServiceTaskTaskRoleC99169CE",
+      ],
+      "Properties": {
+        "CapacityProviderStrategy": [
+          {
+            "CapacityProvider": "FARGATE",
+            "Weight": 0,
+          },
+          {
+            "CapacityProvider": "FARGATE_SPOT",
+            "Weight": 1,
+          },
+        ],
+        "Cluster": {
+          "Ref": "ClusterEB0386A7",
+        },
+        "DeploymentConfiguration": {
+          "Alarms": {
+            "AlarmNames": [],
+            "Enable": false,
+            "Rollback": false,
+          },
+          "MaximumPercent": 200,
+          "MinimumHealthyPercent": 50,
+        },
+        "EnableECSManagedTags": false,
+        "EnableExecuteCommand": true,
+        "NetworkConfiguration": {
+          "AwsvpcConfiguration": {
+            "AssignPublicIp": "DISABLED",
+            "SecurityGroups": [
+              {
+                "Fn::GetAtt": [
+                  "WorkerServiceFargateServiceSecurityGroupEC8152E8",
+                  "GroupId",
+                ],
+              },
+            ],
+            "Subnets": [
+              {
+                "Ref": "VpcPrivateSubnet1Subnet536B997A",
+              },
+              {
+                "Ref": "VpcPrivateSubnet2Subnet3788AAA1",
+              },
+            ],
+          },
+        },
+        "TaskDefinition": {
+          "Ref": "WorkerServiceTaskEB3CD2E8",
+        },
+      },
+      "Type": "AWS::ECS::Service",
+    },
+    "WorkerServiceFargateServiceSecurityGroupEC8152E8": {
+      "DependsOn": [
+        "WorkerServiceTaskTaskRoleDefaultPolicyB05718F5",
+        "WorkerServiceTaskTaskRoleC99169CE",
+      ],
+      "Properties": {
+        "GroupDescription": "TestStack/WorkerService/FargateService/SecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1",
+          },
+        ],
+        "VpcId": {
+          "Ref": "Vpc8378EB38",
+        },
+      },
+      "Type": "AWS::EC2::SecurityGroup",
+    },
+    "WorkerServiceTaskEB3CD2E8": {
+      "Properties": {
+        "ContainerDefinitions": [
+          {
+            "Environment": [
+              {
+                "Name": "MODE",
+                "Value": "worker",
+              },
+              {
+                "Name": "LOG_LEVEL",
+                "Value": "ERROR",
+              },
+              {
+                "Name": "DEBUG",
+                "Value": "false",
+              },
+              {
+                "Name": "REDIS_HOST",
+                "Value": {
+                  "Fn::GetAtt": [
+                    "RedisFF642DF2",
+                    "PrimaryEndPoint.Address",
+                  ],
+                },
+              },
+              {
+                "Name": "REDIS_PORT",
+                "Value": "6379",
+              },
+              {
+                "Name": "REDIS_USE_SSL",
+                "Value": "true",
+              },
+              {
+                "Name": "REDIS_DB",
+                "Value": "0",
+              },
+              {
+                "Name": "STORAGE_TYPE",
+                "Value": "s3",
+              },
+              {
+                "Name": "S3_BUCKET_NAME",
+                "Value": {
+                  "Ref": "StorageBucket19DB2FF8",
+                },
+              },
+              {
+                "Name": "S3_REGION",
+                "Value": {
+                  "Ref": "AWS::Region",
+                },
+              },
+              {
+                "Name": "DB_DATABASE",
+                "Value": "main",
+              },
+              {
+                "Name": "VECTOR_STORE",
+                "Value": "pgvector",
+              },
+              {
+                "Name": "PGVECTOR_DATABASE",
+                "Value": "pgvector",
+              },
+            ],
+            "Essential": true,
+            "Image": "langgenius/dify-api",
+            "LogConfiguration": {
+              "LogDriver": "awslogs",
+              "Options": {
+                "awslogs-group": {
+                  "Ref": "WorkerServiceTaskMainLogGroupA90F15B8",
+                },
+                "awslogs-region": {
+                  "Ref": "AWS::Region",
+                },
+                "awslogs-stream-prefix": "log",
+              },
+            },
+            "Name": "Main",
+            "Secrets": [
+              {
+                "Name": "DB_USERNAME",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":username::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "DB_HOST",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":host::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "DB_PORT",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":port::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "DB_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":password::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_USER",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":username::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_HOST",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":host::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_PORT",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":port::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "PGVECTOR_PASSWORD",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+                      },
+                      ":password::",
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "REDIS_PASSWORD",
+                "ValueFrom": {
+                  "Ref": "RedisAuthToken9E34F6A5",
+                },
+              },
+              {
+                "Name": "CELERY_BROKER_URL",
+                "ValueFrom": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":ssm:",
+                      {
+                        "Ref": "AWS::Region",
+                      },
+                      ":",
+                      {
+                        "Ref": "AWS::AccountId",
+                      },
+                      ":parameter/",
+                      {
+                        "Ref": "RedisBrokerUrlA8582E06",
+                      },
+                    ],
+                  ],
+                },
+              },
+              {
+                "Name": "SECRET_KEY",
+                "ValueFrom": {
+                  "Ref": "ApiServiceEncryptionSecretF73F9ECD",
+                },
+              },
+            ],
+          },
+        ],
+        "Cpu": "1024",
+        "ExecutionRoleArn": {
+          "Fn::GetAtt": [
+            "WorkerServiceTaskExecutionRoleFF871AC9",
+            "Arn",
+          ],
+        },
+        "Family": "TestStackWorkerServiceTask7B4B1923",
+        "Memory": "2048",
+        "NetworkMode": "awsvpc",
+        "RequiresCompatibilities": [
+          "FARGATE",
+        ],
+        "RuntimePlatform": {
+          "CpuArchitecture": "X86_64",
+        },
+        "TaskRoleArn": {
+          "Fn::GetAtt": [
+            "WorkerServiceTaskTaskRoleC99169CE",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::ECS::TaskDefinition",
+    },
+    "WorkerServiceTaskExecutionRoleDefaultPolicyD3383FFB": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::GetAtt": [
+                  "WorkerServiceTaskMainLogGroupA90F15B8",
+                  "Arn",
+                ],
+              },
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "PostgresClusterSecretAttachment8DDCF2A8",
+              },
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "RedisAuthToken9E34F6A5",
+              },
+            },
+            {
+              "Action": [
+                "ssm:DescribeParameters",
+                "ssm:GetParameters",
+                "ssm:GetParameter",
+                "ssm:GetParameterHistory",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":ssm:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":parameter/",
+                    {
+                      "Ref": "RedisBrokerUrlA8582E06",
+                    },
+                  ],
+                ],
+              },
+            },
+            {
+              "Action": [
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret",
+              ],
+              "Effect": "Allow",
+              "Resource": {
+                "Ref": "ApiServiceEncryptionSecretF73F9ECD",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "WorkerServiceTaskExecutionRoleDefaultPolicyD3383FFB",
+        "Roles": [
+          {
+            "Ref": "WorkerServiceTaskExecutionRoleFF871AC9",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+    "WorkerServiceTaskExecutionRoleFF871AC9": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WorkerServiceTaskMainLogGroupA90F15B8": {
+      "DeletionPolicy": "Retain",
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "WorkerServiceTaskTaskRoleC99169CE": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ecs-tasks.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "WorkerServiceTaskTaskRoleDefaultPolicyB05718F5": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*",
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "StorageBucket19DB2FF8",
+                    "Arn",
+                  ],
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "StorageBucket19DB2FF8",
+                          "Arn",
+                        ],
+                      },
+                      "/*",
+                    ],
+                  ],
+                },
+              ],
+            },
+            {
+              "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "ssmmessages:CreateControlChannel",
+                "ssmmessages:CreateDataChannel",
+                "ssmmessages:OpenControlChannel",
+                "ssmmessages:OpenDataChannel",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": "logs:DescribeLogGroups",
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+            {
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:DescribeLogStreams",
+                "logs:PutLogEvents",
+              ],
+              "Effect": "Allow",
+              "Resource": "*",
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "WorkerServiceTaskTaskRoleDefaultPolicyB05718F5",
+        "Roles": [
+          {
+            "Ref": "WorkerServiceTaskTaskRoleC99169CE",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+  },
+  "Rules": {
+    "CheckBootstrapVersion": {
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Contains": [
+                  [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;

@@ -1,0 +1,26 @@
+name: Update snapshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+       - 'dependabot/**'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+      - run: |
+          npm ci
+          npm run test -- -u
+        working-directory: ./cdk
+      - name: Add & Commit
+        uses: EndBug/add-and-commit@v7.2.0
+        with:
+          add: "cdk/test/__snapshots__/."
+          message: "update snapshot"
