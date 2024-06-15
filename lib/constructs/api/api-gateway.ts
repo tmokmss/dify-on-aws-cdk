@@ -3,7 +3,7 @@ import * as apigw from 'aws-cdk-lib/aws-apigatewayv2';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as service_discovery from 'aws-cdk-lib/aws-servicediscovery';
-import { CfnOutput, CfnResource, CustomResource, Duration } from 'aws-cdk-lib';
+import { CfnOutput, CustomResource, Duration } from 'aws-cdk-lib';
 import { Architecture, Code, IFunction, Runtime, SingletonFunction } from 'aws-cdk-lib/aws-lambda';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { join } from 'path';
@@ -39,6 +39,8 @@ export class ApiGateway extends Construct implements ec2.IConnectable {
     this.namespace = props.namespace;
     this.connections = securityGroup.connections;
 
+    // The CloudMap service is created implicitly via ECS Service Connect.
+    // That is why we fetch the ARN of the service via CFn custom resource.
     const handler = new SingletonFunction(this, 'GetCloudMapServiceArn', {
       runtime: Runtime.NODEJS_20_X,
       handler: 'index.handler',

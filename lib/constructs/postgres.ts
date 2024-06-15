@@ -2,10 +2,11 @@ import { Construct } from 'constructs';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Connections, IConnectable, IVpc } from 'aws-cdk-lib/aws-ec2';
-import { CfnOutput, RemovalPolicy, Stack } from 'aws-cdk-lib';
+import { CfnOutput, Duration, RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { ISecret } from 'aws-cdk-lib/aws-secretsmanager';
 import { AwsCustomResource, AwsCustomResourcePolicy, PhysicalResourceId } from 'aws-cdk-lib/custom-resources';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { TimeSleep } from 'cdk-time-sleep';
 
 export interface PostgresProps {
   vpc: IVpc;
@@ -24,7 +25,8 @@ export class Postgres extends Construct implements IConnectable {
   public readonly databaseName = 'main';
   public readonly pgVectorDatabaseName = 'pgvector';
 
-  private queries: AwsCustomResource[] = [];
+  private readonly queries: AwsCustomResource[] = [];
+  private readonly writerId = 'Writer';
 
   constructor(scope: Construct, id: string, props: PostgresProps) {
     super(scope, id);
@@ -38,7 +40,7 @@ export class Postgres extends Construct implements IConnectable {
       vpc,
       serverlessV2MinCapacity: 0.5,
       serverlessV2MaxCapacity: 2.0,
-      writer: rds.ClusterInstance.serverlessV2('Writer', {
+      writer: rds.ClusterInstance.serverlessV2(this.writerId, {
         autoMinorVersionUpgrade: true,
         publiclyAccessible: false,
       }),
@@ -103,8 +105,18 @@ export class Postgres extends Construct implements IConnectable {
     cluster.secret!.grantRead(query);
     cluster.grantDataApiAccess(query);
     if (this.queries.length > 0) {
-      // 雑に直列実行を仮定
-      query.node.addDependency(this.queries.at(-1)!);
+      // We assume each query must be called serially, not in parallel.
+      query.node.defaultChild!.node.addDependency(this.queries.at(-1)!.node.defaultChild!);
+    } else {
+      // When the Data API is called immediately after the writer creation, we got the below error:
+      // > Message returned: HttpEndpoint is not enabled for resource ...
+      // So we wait a minute after the creation before the first Data API call.
+      const sleep = new TimeSleep(this, 'WaitForHttpEndpointReady', {
+        createDuration: Duration.seconds(60),
+      });
+      const dbInstance = this.cluster.node.findChild(this.writerId).node.defaultChild!;
+      sleep.node.defaultChild!.node.addDependency(dbInstance);
+      query.node.defaultChild!.node.addDependency(sleep);
     }
     this.queries.push(query);
     return query;
