@@ -1,6 +1,6 @@
 # Dify on AWS with CDK
 
-Deploy [Dify](https://dify.ai/), an LLM app development platform, using AWS managed services with AWS Cloud Development Kit (CDK).
+Deploy [Dify](https://dify.ai/), an LLM app development platform, using AWS managed services with AWS CDK.
 
 ![architecture](./imgs/architecture.png)
 
