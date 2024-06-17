@@ -70,7 +70,7 @@ npx cdk destroy --force
 ```
 
 ## License
-All the code in this repository is MIT-licensed. However, you should also check [the license of Dify](https://github.com/langgenius/dify/blob/main/LICENSE).
+All the code in this repository is MIT-licensed. However, you should also check [Dify's license](https://github.com/langgenius/dify/blob/main/LICENSE).
 
 ## Acknowledgement
-This CDK code is heavily inspired from [dify-aws-terraform](https://github.com/sonodar/dify-aws-terraform).
+This CDK code is heavily inspired by [dify-aws-terraform](https://github.com/sonodar/dify-aws-terraform).

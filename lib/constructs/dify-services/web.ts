@@ -55,7 +55,7 @@ export class WebService extends Construct {
       }),
       portMappings: [{ containerPort: port, name: mappingName }],
       healthCheck: {
-        // use wget instead of curl due to alpine: https://stackoverflow.com/questions/47722898/how-can-i-make-a-docker-healthcheck-with-wget-instead-of-curl
+        // use wget instead of curl due to alpine: https://stackoverflow.com/a/47722899/18550269
         command: ['CMD-SHELL', `wget --no-verbose --tries=1 --spider http://localhost:${port}/ || exit 1`],
         interval: Duration.seconds(15),
         startPeriod: Duration.seconds(30),

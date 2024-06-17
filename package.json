@@ -2,7 +2,7 @@
   "name": "dify-on-aws-cdk",
   "version": "0.1.0",
   "bin": {
-    "dify-on-aws-cdk": "bin/dify-on-aws-cdk.js"
+    "dify-on-aws-cdk": "bin/cdk.js"
   },
   "scripts": {
     "build": "tsc",
@@ -23,7 +23,7 @@
   "dependencies": {
     "@types/aws-lambda": "^8.10.138",
     "aws-cdk-lib": "^2.145.0",
-    "cdk-lambda-llrt": "^0.0.10",
+    "cdk-lambda-llrt": "^0.0.11",
     "cdk-time-sleep": "^0.0.5",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"

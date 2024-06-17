@@ -20,6 +20,7 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
 
   /**
    * Use t4g.nano NAT instances instead of NAT Gateway.
+   * Ignored when you import an existing VPC.
    * @default false
    */
   cheapVpc?: boolean;
@@ -61,7 +62,6 @@ export class DifyOnAwsStack extends cdk.Stack {
         type: NamespaceType.HTTP,
       },
     });
-    const cloudMapNamespace = cluster.defaultCloudMapNamespace!;
 
     const postgres = new Postgres(this, 'Postgres', {
       vpc,
@@ -78,7 +78,7 @@ export class DifyOnAwsStack extends cdk.Stack {
 
     const apigw = new ApiGateway(this, 'ApiGateway', {
       vpc,
-      namespace: cloudMapNamespace,
+      namespace: cluster.defaultCloudMapNamespace!,
       allowedCidrs: props.allowedCidrs,
     });
 
