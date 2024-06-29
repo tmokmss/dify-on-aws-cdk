@@ -19,6 +19,9 @@ export interface ApiServiceProps {
   redis: Redis;
   storageBucket: IBucket;
 
+  imageTag: string;
+  sandboxImageTag: string;
+
   /**
    * If true, enable debug outputs
    * @default false
@@ -51,7 +54,7 @@ export class ApiService extends Construct {
     this.encryptionSecret = encryptionSecret;
 
     taskDefinition.addContainer('Main', {
-      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-api`),
+      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-api:${props.imageTag}`),
       // https://docs.dify.ai/getting-started/install-self-hosted/environments
       environment: {
         MODE: 'api',
@@ -124,12 +127,18 @@ export class ApiService extends Construct {
         interval: Duration.seconds(15),
         startPeriod: Duration.seconds(30),
         timeout: Duration.seconds(5),
-        retries: 3,
+        retries: 5,
       },
     });
 
     taskDefinition.addContainer('Sandbox', {
-      image: ecs.ContainerImage.fromAsset(join(__dirname, 'docker'), { file: 'sandbox.Dockerfile', platform: Platform.LINUX_AMD64 }),
+      image: ecs.ContainerImage.fromAsset(join(__dirname, 'docker'), {
+        file: 'sandbox.Dockerfile',
+        platform: Platform.LINUX_AMD64,
+        buildArgs: {
+          DIFY_VERSION: props.sandboxImageTag,
+        },
+      }),
       environment: {
         GIN_MODE: 'release',
         WORKER_TIMEOUT: '15',

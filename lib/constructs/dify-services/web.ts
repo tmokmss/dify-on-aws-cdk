@@ -8,6 +8,8 @@ export interface WebServiceProps {
   cluster: ICluster;
   apigw: ApiGateway;
 
+  imageTag: string;
+
   /**
    * If true, enable debug outputs
    * @default false
@@ -30,7 +32,7 @@ export class WebService extends Construct {
     });
 
     taskDefinition.addContainer('Main', {
-      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-web`),
+      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-web:${props.imageTag}`),
       environment: {
         MODE: 'api',
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`

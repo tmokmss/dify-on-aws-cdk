@@ -13,7 +13,7 @@ import { NamespaceType } from 'aws-cdk-lib/aws-servicediscovery';
 
 interface DifyOnAwsStackProps extends cdk.StackProps {
   /**
-   * The IP address ranges that have access to the app.
+   * The IP address ranges in CIDR notation that have access to the app.
    * @example ['1.1.1.1/30']
    */
   allowedCidrs: string[];
@@ -31,11 +31,31 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
    * @default create a new VPC
    */
   vpcId?: string;
+
+  /**
+   * The image tag to deploy Dify container images (api=worker and web).
+   * The images are pulled from [here](https://hub.docker.com/u/langgenius).
+   *
+   * It is recommended to set this to a fixed version,
+   * because otherwise an unexpected version is pulled on a ECS service's scaling activity.
+   * @default "latest"
+   */
+  difyImageTag?: string;
+
+  /**
+   * The image tag to deploy the Dify sandbox container image.
+   * The image is pulled from [here](https://hub.docker.com/r/langgenius/dify-sandbox/tags).
+   *
+   * @default "latest"
+   */
+  difySandboxImageTag?: string;
 }
 
 export class DifyOnAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DifyOnAwsStackProps) {
     super(scope, id, props);
+
+    const { difyImageTag: imageTag = 'latest' } = props;
 
     let vpc: IVpc;
     if (props.vpcId != null) {
@@ -85,6 +105,7 @@ export class DifyOnAwsStack extends cdk.Stack {
     new WebService(this, 'WebService', {
       cluster,
       apigw,
+      imageTag,
     });
 
     const api = new ApiService(this, 'ApiService', {
@@ -93,6 +114,8 @@ export class DifyOnAwsStack extends cdk.Stack {
       postgres,
       redis,
       storageBucket,
+      imageTag,
+      sandboxImageTag: props.difySandboxImageTag ?? 'latest',
     });
 
     new WorkerService(this, 'WorkerService', {
@@ -101,6 +124,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       redis,
       storageBucket,
       encryptionSecret: api.encryptionSecret,
+      imageTag,
     });
   }
 }

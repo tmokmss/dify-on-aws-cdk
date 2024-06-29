@@ -15,6 +15,8 @@ export interface WorkerServiceProps {
   storageBucket: IBucket;
   encryptionSecret: ISecret;
 
+  imageTag: string;
+
   /**
    * If true, enable debug outputs
    * @default false
@@ -35,7 +37,7 @@ export class WorkerService extends Construct {
     });
 
     taskDefinition.addContainer('Main', {
-      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-api`),
+      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-api:${props.imageTag}`),
       environment: {
         MODE: 'worker',
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`

@@ -1060,11 +1060,11 @@ exports[`Snapshot test 1`] = `
                 "curl -f http://localhost:5001/health || exit 1",
               ],
               "Interval": 15,
-              "Retries": 3,
+              "Retries": 5,
               "StartPeriod": 30,
               "Timeout": 5,
             },
-            "Image": "langgenius/dify-api",
+            "Image": "langgenius/dify-api:latest",
             "LogConfiguration": {
               "LogDriver": "awslogs",
               "Options": {
@@ -1261,7 +1261,7 @@ exports[`Snapshot test 1`] = `
             ],
             "Essential": true,
             "Image": {
-              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:59883cc5fd63a0f1d3351e359dfb881d59ff4adf57ebb876397c613a07fae09c",
+              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:904a2cfc7bfd3eaca0cc1c08b18f53ec219c75d13f68aafb7ad2787691bd6ec0",
             },
             "LogConfiguration": {
               "LogDriver": "awslogs",
@@ -3279,7 +3279,7 @@ exports.handler = async function (event, context) {
               "StartPeriod": 30,
               "Timeout": 5,
             },
-            "Image": "langgenius/dify-web",
+            "Image": "langgenius/dify-web:latest",
             "LogConfiguration": {
               "LogDriver": "awslogs",
               "Options": {
@@ -3534,7 +3534,7 @@ exports.handler = async function (event, context) {
               },
             ],
             "Essential": true,
-            "Image": "langgenius/dify-api",
+            "Image": "langgenius/dify-api:latest",
             "LogConfiguration": {
               "LogDriver": "awslogs",
               "Options": {
