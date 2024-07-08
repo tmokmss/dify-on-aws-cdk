@@ -1,7 +1,7 @@
 import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Duration, Stack, aws_ecs as ecs } from 'aws-cdk-lib';
-import { Port } from 'aws-cdk-lib/aws-ec2';
+import { IVpc, Port } from 'aws-cdk-lib/aws-ec2';
 import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Postgres } from '../postgres';
@@ -10,10 +10,11 @@ import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { join } from 'path';
 import { ApiGateway } from '../api/api-gateway';
+import { DockerImageCode, DockerImageFunction } from 'aws-cdk-lib/aws-lambda';
 
 export interface ApiServiceProps {
-  cluster: ICluster;
   apigw: ApiGateway;
+  vpc: IVpc;
 
   postgres: Postgres;
   redis: Redis;
@@ -29,22 +30,14 @@ export interface ApiServiceProps {
   debug?: boolean;
 }
 
-export class ApiService extends Construct {
+export class ApiLambdaService extends Construct {
   public readonly encryptionSecret: Secret;
 
   constructor(scope: Construct, id: string, props: ApiServiceProps) {
     super(scope, id);
 
-    const { cluster, apigw, postgres, redis, storageBucket, debug = false } = props;
+    const { vpc, apigw, postgres, redis, storageBucket, debug = false } = props;
     const mappingName = 'api';
-    const port = 5001;
-
-    const taskDefinition = new FargateTaskDefinition(this, 'Task', {
-      cpu: 1024,
-      // 512だとOOMが起きたので、増やした
-      memoryLimitMiB: 2048,
-      runtimePlatform: { cpuArchitecture: CpuArchitecture.X86_64 },
-    });
 
     const encryptionSecret = new Secret(this, 'EncryptionSecret', {
       generateSecretString: {
@@ -53,9 +46,14 @@ export class ApiService extends Construct {
     });
     this.encryptionSecret = encryptionSecret;
 
-    taskDefinition.addContainer('Main', {
-      image: ecs.ContainerImage.fromRegistry(`langgenius/dify-api:${props.imageTag}`),
-      // https://docs.dify.ai/getting-started/install-self-hosted/environments
+    const handler = new DockerImageFunction(this, 'Handler', {
+      code: DockerImageCode.fromImageAsset(join(__dirname, 'docker'), {
+        file: 'api.Dockerfile',
+        platform: Platform.LINUX_AMD64,
+        buildArgs: {
+          DIFY_VERSION: props.imageTag,
+        },
+      }),
       environment: {
         MODE: 'api',
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
@@ -64,7 +62,7 @@ export class ApiService extends Construct {
         DEBUG: debug ? 'true' : 'false',
 
         // When enabled, migrations will be executed prior to application startup and the application will start after the migrations have completed.
-        MIGRATION_ENABLED: 'true',
+        // MIGRATION_ENABLED: 'true',
 
         // The base URL of console application web frontend, refers to the Console base URL of WEB service if console domain is
         // different from api or web app domain.
@@ -101,102 +99,42 @@ export class ApiService extends Construct {
 
         // The sandbox service endpoint.
         CODE_EXECUTION_ENDPOINT: 'http://localhost:8194', // Fargate の task 内通信は localhost 宛,
-      },
-      logging: ecs.LogDriver.awsLogs({
-        streamPrefix: 'log',
-      }),
-      portMappings: [{ containerPort: port, name: mappingName }],
-      secrets: {
+
         // The configurations of postgres database connection.
         // It is consistent with the configuration in the 'db' service below.
-        DB_USERNAME: ecs.Secret.fromSecretsManager(postgres.secret, 'username'),
-        DB_HOST: ecs.Secret.fromSecretsManager(postgres.secret, 'host'),
-        DB_PORT: ecs.Secret.fromSecretsManager(postgres.secret, 'port'),
-        DB_PASSWORD: ecs.Secret.fromSecretsManager(postgres.secret, 'password'),
-        PGVECTOR_USER: ecs.Secret.fromSecretsManager(postgres.secret, 'username'),
-        PGVECTOR_HOST: ecs.Secret.fromSecretsManager(postgres.secret, 'host'),
-        PGVECTOR_PORT: ecs.Secret.fromSecretsManager(postgres.secret, 'port'),
-        PGVECTOR_PASSWORD: ecs.Secret.fromSecretsManager(postgres.secret, 'password'),
-        REDIS_PASSWORD: ecs.Secret.fromSecretsManager(redis.secret),
-        CELERY_BROKER_URL: ecs.Secret.fromSsmParameter(redis.brokerUrl),
-        SECRET_KEY: ecs.Secret.fromSecretsManager(encryptionSecret),
-        CODE_EXECUTION_API_KEY: ecs.Secret.fromSecretsManager(encryptionSecret), // is it ok to reuse this?
+        DB_USERNAME: postgres.secret.secretValueFromJson('username').unsafeUnwrap(),
+        DB_HOST: postgres.secret.secretValueFromJson('host').unsafeUnwrap(),
+        DB_PORT: postgres.secret.secretValueFromJson('port').unsafeUnwrap(),
+        DB_PASSWORD: postgres.secret.secretValueFromJson('password').unsafeUnwrap(),
+        PGVECTOR_USER: postgres.secret.secretValueFromJson('username').unsafeUnwrap(),
+        PGVECTOR_HOST: postgres.secret.secretValueFromJson('host').unsafeUnwrap(),
+        PGVECTOR_PORT: postgres.secret.secretValueFromJson('port').unsafeUnwrap(),
+        PGVECTOR_PASSWORD: postgres.secret.secretValueFromJson('password').unsafeUnwrap(),
+        REDIS_PASSWORD: redis.secret.secretValue.unsafeUnwrap(),
+        CELERY_BROKER_URL: redis.brokerUrl.stringValue,
+        SECRET_KEY: encryptionSecret.secretValue.unsafeUnwrap(),
+        CODE_EXECUTION_API_KEY: encryptionSecret.secretValue.unsafeUnwrap(), // is it ok to reuse this?
       },
-      healthCheck: {
-        command: ['CMD-SHELL', `curl -f http://localhost:${port}/health || exit 1`],
-        interval: Duration.seconds(15),
-        startPeriod: Duration.seconds(30),
-        timeout: Duration.seconds(5),
-        retries: 5,
-      },
+      memorySize: 2048,
+      vpc,
+      timeout: Duration.minutes(5),
     });
 
-    taskDefinition.addContainer('Sandbox', {
-      image: ecs.ContainerImage.fromAsset(join(__dirname, 'docker'), {
-        file: 'sandbox.Dockerfile',
-        platform: Platform.LINUX_AMD64,
-        buildArgs: {
-          DIFY_VERSION: props.sandboxImageTag,
-        },
-      }),
-      environment: {
-        GIN_MODE: 'release',
-        WORKER_TIMEOUT: '15',
-        ENABLE_NETWORK: 'true',
-      },
-      logging: ecs.LogDriver.awsLogs({
-        streamPrefix: 'log',
-      }),
-      portMappings: [{ containerPort: 8194 }],
-      secrets: {
-        API_KEY: ecs.Secret.fromSecretsManager(encryptionSecret),
-      },
-    });
-
-    storageBucket.grantReadWrite(taskDefinition.taskRole);
+    storageBucket.grantReadWrite(handler);
 
     // we can use IAM role once this issue will be closed
     // https://github.com/langgenius/dify/issues/3471
-    taskDefinition.taskRole.addToPrincipalPolicy(
+    handler.role!.addToPrincipalPolicy(
       new PolicyStatement({
         actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
         resources: ['*'],
-      })
+      }),
     );
 
-    // Service
-    const service = new ecs.FargateService(this, 'FargateService', {
-      cluster,
-      taskDefinition,
-      capacityProviderStrategies: [
-        {
-          capacityProvider: 'FARGATE',
-          weight: 0,
-        },
-        {
-          capacityProvider: 'FARGATE_SPOT',
-          weight: 1,
-        },
-      ],
-      serviceConnectConfiguration: {
-        services: [
-          {
-            portMappingName: mappingName,
-          },
-        ],
-        logDriver: ecs.LogDriver.awsLogs({
-          streamPrefix: 'log',
-        }),
-      },
-      enableExecuteCommand: true,
-    });
-
-    service.connections.allowToDefaultPort(postgres);
-    service.connections.allowToDefaultPort(redis);
-    service.node.addDependency(cluster.defaultCloudMapNamespace!);
-    service.connections.allowFrom(apigw, Port.tcp(port));
+    handler.connections.allowToDefaultPort(postgres);
+    handler.connections.allowToDefaultPort(redis);
 
     const paths = ['/console/api', '/api', '/v1', '/files'];
-    // apigw.addService(mappingName, service, [...paths, ...paths.map((p) => `${p}/*`)]);
+    apigw.addLambda(handler, [...paths, ...paths.map((p) => `${p}/*`)]);
   }
 }

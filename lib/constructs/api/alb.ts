@@ -4,12 +4,12 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as service_discovery from 'aws-cdk-lib/aws-servicediscovery';
 import { CfnOutput, CustomResource, Duration } from 'aws-cdk-lib';
+import { ApplicationLoadBalancer, ApplicationProtocol, ListenerAction } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import { Architecture, Code, IFunction, Runtime, SingletonFunction } from 'aws-cdk-lib/aws-lambda';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { join } from 'path';
 import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { LlrtFunction } from 'cdk-lambda-llrt';
-import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 
 export interface ApiGatewayProps {
   vpc: ec2.IVpc;
@@ -33,86 +33,22 @@ export class ApiGateway extends Construct implements ec2.IConnectable {
     const securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', {
       vpc,
     });
-    const vpcLink = new apigw.VpcLink(this, 'VpcLink', {
+    
+    const alb = new ApplicationLoadBalancer(this, 'Alb', {
       vpc,
-      securityGroups: [securityGroup],
-    });
-    this.namespace = props.namespace;
-    this.connections = securityGroup.connections;
-
-    // The CloudMap service is created implicitly via ECS Service Connect.
-    // That is why we fetch the ARN of the service via CFn custom resource.
-    const handler = new SingletonFunction(this, 'GetCloudMapServiceArn', {
-      runtime: Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      timeout: Duration.seconds(30),
-      uuid: '82ebb9e7-ed95-4f5b-bd5c-584d8c1ff2ff',
-      code: Code.fromInline(`
-const response = require('cfn-response');
-const sdk = require('@aws-sdk/client-servicediscovery');
-const client = new sdk.ServiceDiscoveryClient();
-
-exports.handler = async function (event, context) {
-  try {
-    console.log(event);
-    if (event.RequestType == 'Delete') {
-      return await response.send(event, context, response.SUCCESS);
-    }
-    // https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/client/servicediscovery/command/ListServicesCommand/
-    const namespaceId = event.ResourceProperties.NamespaceId;
-    const serviceName = event.ResourceProperties.ServiceName;
-    const command = new sdk.ListServicesCommand({
-      Filters: [
-        {
-          Name: "NAMESPACE_ID",
-          Values: [
-            namespaceId,
-          ],
-          Condition: "EQ",
-        },
-      ],
-    });
-    const res = await client.send(command);
-    const service = res.Services.find(service => service.Name == serviceName);
-    if (service == null) {
-      throw new Error('Service not found.');
-    }
-    await response.send(event, context, response.SUCCESS, { serviceArn: service.Arn }, service.Id);
-  } catch (e) {
-    console.log(e);
-    await response.send(event, context, response.FAILED);
-  }
-};
-`),
-    });
-    handler.addToRolePolicy(
-      new PolicyStatement({
-        actions: ['servicediscovery:ListServices'],
-        resources: ['*'],
-      }),
-    );
-    this.serviceArnHandler = handler;
-
-    const authHandler = new LlrtFunction(this, 'AuthHandler', {
-      entry: join(__dirname, 'lambda', 'authorizer.ts'),
-      environment: {
-        ALLOWED_CIDRS: props.allowedCidrs.join(','),
-      },
-      architecture: Architecture.ARM_64,
+      vpcSubnets: vpc.selectSubnets({ subnets: vpc.publicSubnets }),
+      internetFacing: true,
     });
 
-    // we just use authorizer for IP address restriction.
-    const authorizer = new HttpLambdaAuthorizer('Authorizer', authHandler, {
-      responseTypes: [HttpLambdaResponseType.IAM],
-      identitySource: [],
-      // must disable caching because there's no way to identify users
-      resultsCacheTtl: Duration.seconds(0),
+    const listener = alb.addListener('Listener', {
+      port: 80,
+      protocol: ApplicationProtocol.HTTP,
+      open: false,
+      defaultAction: ListenerAction.fixedResponse(400),
     });
 
-    const api = new apigw.HttpApi(this, 'Resource', {
-      apiName: 'DifyApiGateway',
-      defaultAuthorizer: authorizer,
-    });
+    props.allowedCidrs.forEach((cidr) => alb.connections.allowFrom(ec2.Peer.ipv4(cidr), ec2.Port.tcp(80)));
+
 
     this.api = api;
     this.vpcLink = vpcLink;
@@ -130,19 +66,7 @@ exports.handler = async function (event, context) {
         path,
         methods: [apigw.HttpMethod.ANY],
         integration: new CloudMapIntegration(cloudMapServiceName, serviceArn, this.vpcLink.vpcLinkId),
-      }),
-    );
-  }
-
-  public addLambda(lambda: IFunction, paths: string[]) {
-    paths = paths.map((path) => path.replace('*', '{proxy+}'));
-
-    paths.forEach((path) =>
-      this.api.addRoutes({
-        path,
-        methods: [apigw.HttpMethod.ANY],
-        integration: new HttpLambdaIntegration(path, lambda),
-      }),
+      })
     );
   }
 

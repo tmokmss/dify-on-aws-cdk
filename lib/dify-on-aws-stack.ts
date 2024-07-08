@@ -1,5 +1,16 @@
 import * as cdk from 'aws-cdk-lib';
-import { AmazonLinuxCpuType, IVpc, InstanceClass, InstanceSize, InstanceType, MachineImage, NatProvider, Peer, Port, Vpc } from 'aws-cdk-lib/aws-ec2';
+import {
+  AmazonLinuxCpuType,
+  IVpc,
+  InstanceClass,
+  InstanceSize,
+  InstanceType,
+  MachineImage,
+  NatProvider,
+  Peer,
+  Port,
+  Vpc,
+} from 'aws-cdk-lib/aws-ec2';
 import { Cluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Postgres } from './constructs/postgres';
@@ -10,6 +21,7 @@ import { ApiService } from './constructs/dify-services/api';
 import { WorkerService } from './constructs/dify-services/worker';
 import { ApiGateway } from './constructs/api/api-gateway';
 import { NamespaceType } from 'aws-cdk-lib/aws-servicediscovery';
+import { ApiLambdaService } from './constructs/dify-services/api-lambda';
 
 interface DifyOnAwsStackProps extends cdk.StackProps {
   /**
@@ -110,6 +122,16 @@ export class DifyOnAwsStack extends cdk.Stack {
 
     const api = new ApiService(this, 'ApiService', {
       cluster,
+      apigw,
+      postgres,
+      redis,
+      storageBucket,
+      imageTag,
+      sandboxImageTag: props.difySandboxImageTag ?? 'latest',
+    });
+
+    const api2 = new ApiLambdaService(this, 'ApiLambdaService', {
+      vpc,
       apigw,
       postgres,
       redis,
