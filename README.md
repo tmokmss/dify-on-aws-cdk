@@ -14,6 +14,8 @@ Key Features:
     * allow to use NAT instances instead of NAT Gateway, use API Gateway instead of ELB, and Fargate spot capacity by default
 * Natively integrate with Bedrock using IAM role
 
+本リポジトリの使い方について、日本語で書かれた記事があります！[AWS CDKでDifyを一撃構築](https://note.com/yukkie1114/n/n0d9c5551569f)
+
 ## Prerequisites
 You must have the following dependencies installed to deploy this app:
 
