@@ -132,8 +132,7 @@ export class ApiService extends Construct {
     });
 
     taskDefinition.addContainer('Sandbox', {
-      image: ecs.ContainerImage.fromAsset(join(__dirname, 'docker'), {
-        file: 'sandbox.Dockerfile',
+      image: ecs.ContainerImage.fromAsset(join(__dirname, 'docker', 'sandbox'), {
         platform: Platform.LINUX_AMD64,
         buildArgs: {
           DIFY_VERSION: props.sandboxImageTag,

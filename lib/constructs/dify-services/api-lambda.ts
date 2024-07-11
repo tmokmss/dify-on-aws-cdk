@@ -37,7 +37,6 @@ export class ApiLambdaService extends Construct {
     super(scope, id);
 
     const { vpc, apigw, postgres, redis, storageBucket, debug = false } = props;
-    const mappingName = 'api';
 
     const encryptionSecret = new Secret(this, 'EncryptionSecret', {
       generateSecretString: {
@@ -47,8 +46,7 @@ export class ApiLambdaService extends Construct {
     this.encryptionSecret = encryptionSecret;
 
     const handler = new DockerImageFunction(this, 'Handler', {
-      code: DockerImageCode.fromImageAsset(join(__dirname, 'docker'), {
-        file: 'api.Dockerfile',
+      code: DockerImageCode.fromImageAsset(join(__dirname, 'docker', 'api'), {
         platform: Platform.LINUX_AMD64,
         buildArgs: {
           DIFY_VERSION: props.imageTag,
@@ -56,6 +54,9 @@ export class ApiLambdaService extends Construct {
       }),
       environment: {
         MODE: 'api',
+        // avoid writing files to directories outside of /tmp
+        TRANSFORMERS_CACHE: '/tmp/.cache',
+        MPLCONFIGDIR: '/tmp/.config',
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
         LOG_LEVEL: debug ? 'DEBUG' : 'ERROR',
         // enable DEBUG mode to output more logs
