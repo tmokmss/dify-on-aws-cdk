@@ -1,7 +1,7 @@
 import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Duration, Stack, aws_ecs as ecs } from 'aws-cdk-lib';
-import { IVpc, Port } from 'aws-cdk-lib/aws-ec2';
+import { Connections, IConnectable, IVpc, Port } from 'aws-cdk-lib/aws-ec2';
 import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Postgres } from '../postgres';
@@ -9,19 +9,20 @@ import { Redis } from '../redis';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { join } from 'path';
-import { ApiGateway } from '../api/api-gateway';
-import { DockerImageCode, DockerImageFunction } from 'aws-cdk-lib/aws-lambda';
+import { DockerImageCode, DockerImageFunction, FunctionUrlAuthType, InvokeMode } from 'aws-cdk-lib/aws-lambda';
+import { CloudFrontGateway } from '../api/cloudfront';
+import { SandboxService } from './sandbox';
 
 export interface ApiServiceProps {
-  apigw: ApiGateway;
+  cfgw: CloudFrontGateway;
   vpc: IVpc;
 
   postgres: Postgres;
   redis: Redis;
   storageBucket: IBucket;
+  sandbox: SandboxService;
 
   imageTag: string;
-  sandboxImageTag: string;
 
   /**
    * If true, enable debug outputs
@@ -36,7 +37,7 @@ export class ApiLambdaService extends Construct {
   constructor(scope: Construct, id: string, props: ApiServiceProps) {
     super(scope, id);
 
-    const { vpc, apigw, postgres, redis, storageBucket, debug = false } = props;
+    const { vpc, cfgw, postgres, redis, storageBucket, sandbox, debug = false } = props;
 
     const encryptionSecret = new Secret(this, 'EncryptionSecret', {
       generateSecretString: {
@@ -65,15 +66,7 @@ export class ApiLambdaService extends Construct {
         // When enabled, migrations will be executed prior to application startup and the application will start after the migrations have completed.
         // MIGRATION_ENABLED: 'true',
 
-        // The base URL of console application web frontend, refers to the Console base URL of WEB service if console domain is
-        // different from api or web app domain.
-        CONSOLE_WEB_URL: apigw.url,
-        // The base URL of console application api server, refers to the Console base URL of WEB service if console domain is different from api or web app domain.
-        CONSOLE_API_URL: apigw.url,
-        // The URL prefix for Service API endpoints, refers to the base URL of the current API service if api domain is different from console domain.
-        SERVICE_API_URL: apigw.url,
-        // The URL prefix for Web APP frontend, refers to the Web App base URL of WEB service if web app domain is different from console or api domain.
-        APP_WEB_URL: apigw.url,
+        CLOUDFRONT_URL_PARAMETER: cfgw.urlParameter.parameterName,
 
         // The configurations of redis connection.
         REDIS_HOST: redis.endpoint,
@@ -99,7 +92,7 @@ export class ApiLambdaService extends Construct {
         PGVECTOR_DATABASE: postgres.pgVectorDatabaseName,
 
         // The sandbox service endpoint.
-        CODE_EXECUTION_ENDPOINT: 'http://localhost:8194', // Fargate の task 内通信は localhost 宛,
+        CODE_EXECUTION_ENDPOINT: sandbox.sandboxEndpoint,
 
         // The configurations of postgres database connection.
         // It is consistent with the configuration in the 'db' service below.
@@ -114,14 +107,16 @@ export class ApiLambdaService extends Construct {
         REDIS_PASSWORD: redis.secret.secretValue.unsafeUnwrap(),
         CELERY_BROKER_URL: redis.brokerUrl.stringValue,
         SECRET_KEY: encryptionSecret.secretValue.unsafeUnwrap(),
-        CODE_EXECUTION_API_KEY: encryptionSecret.secretValue.unsafeUnwrap(), // is it ok to reuse this?
+        CODE_EXECUTION_API_KEY: sandbox.encryptionSecret.secretValue.unsafeUnwrap(), // is it ok to reuse this?
       },
-      memorySize: 2048,
+      memorySize: 1769,
       vpc,
       timeout: Duration.minutes(5),
     });
 
     storageBucket.grantReadWrite(handler);
+    sandbox.connections.allowDefaultPortFrom(handler);
+    cfgw.urlParameter.grantRead(handler);
 
     // we can use IAM role once this issue will be closed
     // https://github.com/langgenius/dify/issues/3471
@@ -136,6 +131,13 @@ export class ApiLambdaService extends Construct {
     handler.connections.allowToDefaultPort(redis);
 
     const paths = ['/console/api', '/api', '/v1', '/files'];
-    apigw.addLambda(handler, [...paths, ...paths.map((p) => `${p}/*`)]);
+    props.cfgw.addLambda(
+      handler,
+      handler.addFunctionUrl({
+        invokeMode: InvokeMode.RESPONSE_STREAM,
+      }),
+      [...paths, ...paths.map((p) => `${p}/*`)],
+    );
   }
+  connections: Connections;
 }

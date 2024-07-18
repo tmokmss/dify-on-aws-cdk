@@ -7,8 +7,6 @@ import {
   InstanceType,
   MachineImage,
   NatProvider,
-  Peer,
-  Port,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { Cluster } from 'aws-cdk-lib/aws-ecs';
@@ -16,12 +14,14 @@ import { Construct } from 'constructs';
 import { Postgres } from './constructs/postgres';
 import { Redis } from './constructs/redis';
 import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
-import { WebService } from './constructs/dify-services/web';
-import { ApiService } from './constructs/dify-services/api';
+import { SandboxService } from './constructs/dify-services/sandbox';
 import { WorkerService } from './constructs/dify-services/worker';
-import { ApiGateway } from './constructs/api/api-gateway';
 import { NamespaceType } from 'aws-cdk-lib/aws-servicediscovery';
 import { ApiLambdaService } from './constructs/dify-services/api-lambda';
+import { WebLambdaService } from './constructs/dify-services/web-lambda';
+import { CloudFrontGateway } from './constructs/api/cloudfront';
+import { IFunction } from 'aws-cdk-lib/aws-lambda';
+import { UsEast1Stack } from './us-east-1-stack';
 
 interface DifyOnAwsStackProps extends cdk.StackProps {
   /**
@@ -61,6 +61,8 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
    * @default "latest"
    */
   difySandboxImageTag?: string;
+
+  usEast1Stack: UsEast1Stack;
 }
 
 export class DifyOnAwsStack extends cdk.Stack {
@@ -85,13 +87,13 @@ export class DifyOnAwsStack extends cdk.Stack {
       });
     }
 
-    const cluster = new Cluster(this, 'Cluster', {
+    const cluster = new Cluster(this, 'EcsCluster', {
       vpc,
       containerInsights: true,
       defaultCloudMapNamespace: {
-        name: 'dify',
-        useForServiceConnect: true,
-        type: NamespaceType.HTTP,
+        name: 'difyns',
+        // useForServiceConnect: true,
+        type: NamespaceType.DNS_PRIVATE,
       },
     });
 
@@ -108,36 +110,30 @@ export class DifyOnAwsStack extends cdk.Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    const apigw = new ApiGateway(this, 'ApiGateway', {
-      vpc,
-      namespace: cluster.defaultCloudMapNamespace!,
+    const cfgw = new CloudFrontGateway(this, 'CFGateway', {
       allowedCidrs: props.allowedCidrs,
+      usEast1Stack: props.usEast1Stack,
     });
 
-    new WebService(this, 'WebService', {
+    const sandbox = new SandboxService(this, 'ApiService', {
       cluster,
-      apigw,
-      imageTag,
-    });
-
-    const api = new ApiService(this, 'ApiService', {
-      cluster,
-      apigw,
-      postgres,
-      redis,
-      storageBucket,
-      imageTag,
       sandboxImageTag: props.difySandboxImageTag ?? 'latest',
     });
 
-    const api2 = new ApiLambdaService(this, 'ApiLambdaService', {
+    new ApiLambdaService(this, 'ApiLambdaService', {
       vpc,
-      apigw,
+      cfgw,
       postgres,
       redis,
       storageBucket,
       imageTag,
-      sandboxImageTag: props.difySandboxImageTag ?? 'latest',
+      sandbox,
+    });
+
+    new WebLambdaService(this, 'WebLambdaService', {
+      vpc,
+      cfgw,
+      imageTag,
     });
 
     new WorkerService(this, 'WorkerService', {
@@ -145,7 +141,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       postgres,
       redis,
       storageBucket,
-      encryptionSecret: api.encryptionSecret,
+      encryptionSecret: sandbox.encryptionSecret,
       imageTag,
     });
   }

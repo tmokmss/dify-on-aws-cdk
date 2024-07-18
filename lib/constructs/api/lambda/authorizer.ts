@@ -17,7 +17,7 @@ export const handler: APIGatewayRequestAuthorizerHandler = async (event, context
               'aws:SourceIp': allowedCidrs,
             },
           },
-        },
+        } as const,
       ],
     },
   };
