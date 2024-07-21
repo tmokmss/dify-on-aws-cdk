@@ -21,5 +21,9 @@ export const handler: CloudFrontRequestHandler = async (event) => {
     delete request.headers['authorization'];
   }
 
+  if (request.uri.startsWith('/DIFY_SANDBOX')) {
+    request.uri = request.uri.replace('/DIFY_SANDBOX', '');
+  }
+
   return request;
 };

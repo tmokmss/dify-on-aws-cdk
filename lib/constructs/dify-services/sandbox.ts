@@ -1,86 +1,53 @@
 import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
-import { aws_ecs as ecs } from 'aws-cdk-lib';
+import { Duration, aws_ecs as ecs, Stack } from 'aws-cdk-lib';
 import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { join } from 'path';
-import { Connections, IConnectable, Port } from 'aws-cdk-lib/aws-ec2';
+import { Connections, IConnectable, IVpc, Port } from 'aws-cdk-lib/aws-ec2';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
+import { DockerImageFunction, DockerImageCode, InvokeMode } from 'aws-cdk-lib/aws-lambda';
+import { CloudFrontGateway } from '../api/cloudfront';
 
 export interface ApiServiceProps {
-  cluster: ICluster;
-  sandboxImageTag: string;
+  cfgw: CloudFrontGateway;
+  imageTag: string;
 }
 
-export class SandboxService extends Construct implements IConnectable {
+export class SandboxService extends Construct {
   public readonly sandboxEndpoint: string;
   public readonly encryptionSecret: Secret;
-  connections: Connections;
 
   constructor(scope: Construct, id: string, props: ApiServiceProps) {
     super(scope, id);
 
-    const { cluster } = props;
-    const port = 8194;
+    const endpointPrefix = 'DIFY_SANDBOX';
 
-    const taskDefinition = new FargateTaskDefinition(this, 'Task', {
-      cpu: 512,
-      memoryLimitMiB: 1024,
-      runtimePlatform: { cpuArchitecture: CpuArchitecture.X86_64 },
-    });
-
-    const encryptionSecret = new Secret(this, 'EncryptionSecret', {
+    const secret = new Secret(this, 'Secret', {
       generateSecretString: {
         passwordLength: 42,
       },
     });
-    this.encryptionSecret = encryptionSecret;
+    this.encryptionSecret = secret;
 
-    taskDefinition.addContainer('Sandbox', {
-      image: ecs.ContainerImage.fromAsset(join(__dirname, 'docker', 'sandbox'), {
+    const handler = new DockerImageFunction(this, 'Handler', {
+      code: DockerImageCode.fromImageAsset(join(__dirname, 'docker', 'sandbox'), {
         platform: Platform.LINUX_AMD64,
         buildArgs: {
-          DIFY_VERSION: props.sandboxImageTag,
+          DIFY_VERSION: props.imageTag,
         },
       }),
       environment: {
         GIN_MODE: 'release',
-        WORKER_TIMEOUT: '15',
+        WORKER_TIMEOUT: '850', // in seconds
         ENABLE_NETWORK: 'true',
+        API_KEY: secret.secretValue.unsafeUnwrap(),
       },
-      logging: ecs.LogDriver.awsLogs({
-        streamPrefix: 'log',
-      }),
-      portMappings: [{ containerPort: port }],
-      secrets: {
-        API_KEY: ecs.Secret.fromSecretsManager(encryptionSecret),
-      },
+      memorySize: 1769,
+      timeout: Duration.minutes(15),
     });
 
-    // Service
-    const service = new ecs.FargateService(this, 'FargateService', {
-      cluster,
-      taskDefinition,
-      capacityProviderStrategies: [
-        {
-          capacityProvider: 'FARGATE',
-          weight: 0,
-        },
-        {
-          capacityProvider: 'FARGATE_SPOT',
-          weight: 1,
-        },
-      ],
-      cloudMapOptions: {
-        name: 'sandbox',
-      },
-      enableExecuteCommand: true,
-    });
-    this.connections = new Connections({
-      defaultPort: Port.tcp(port),
-      securityGroups: service.connections.securityGroups,
-    });
-    this.sandboxEndpoint = `http://${service.cloudMapService!.serviceName}.${
-      cluster.defaultCloudMapNamespace!.namespaceName
-    }:${port}`;
+    const paths = [`/${endpointPrefix}`];
+    props.cfgw.addLambda(handler, handler.addFunctionUrl({}), [...paths, ...paths.map((p) => `${p}/*`)]);
   }
 }
