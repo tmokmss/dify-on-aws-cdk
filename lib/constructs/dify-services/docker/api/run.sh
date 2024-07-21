@@ -15,6 +15,4 @@ export CONSOLE_API_URL=$URL
 export SERVICE_API_URL=$URL
 # The URL prefix for Web APP frontend, refers to the Web App base URL of WEB service if web app domain is different from console or api domain.
 export APP_WEB_URL=$URL
-
-export CODE_EXECUTION_ENDPOINT="${URL}/DIFY_SANDBOX"
 exec /bin/bash /entrypoint.sh

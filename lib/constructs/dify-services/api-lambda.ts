@@ -31,7 +31,7 @@ export interface ApiServiceProps {
   debug?: boolean;
 }
 
-export class ApiService extends Construct {
+export class ApiLambdaService extends Construct {
   public readonly encryptionSecret: Secret;
 
   constructor(scope: Construct, id: string, props: ApiServiceProps) {
@@ -92,7 +92,7 @@ export class ApiService extends Construct {
         PGVECTOR_DATABASE: postgres.pgVectorDatabaseName,
 
         // The sandbox service endpoint.
-        // CODE_EXECUTION_ENDPOINT: sandbox.sandboxEndpoint,
+        CODE_EXECUTION_ENDPOINT: sandbox.sandboxEndpoint,
 
         // The configurations of postgres database connection.
         // It is consistent with the configuration in the 'db' service below.
@@ -115,6 +115,7 @@ export class ApiService extends Construct {
     });
 
     storageBucket.grantReadWrite(handler);
+    sandbox.connections.allowDefaultPortFrom(handler);
     cfgw.urlParameter.grantRead(handler);
 
     // we can use IAM role once this issue will be closed

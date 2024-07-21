@@ -17,8 +17,8 @@ import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
 import { SandboxService } from './constructs/dify-services/sandbox';
 import { WorkerService } from './constructs/dify-services/worker';
 import { NamespaceType } from 'aws-cdk-lib/aws-servicediscovery';
-import { ApiService } from './constructs/dify-services/api';
-import { WebService } from './constructs/dify-services/web';
+import { ApiLambdaService } from './constructs/dify-services/api-lambda';
+import { WebLambdaService } from './constructs/dify-services/web-lambda';
 import { CloudFrontGateway } from './constructs/api/cloudfront';
 import { IFunction } from 'aws-cdk-lib/aws-lambda';
 import { UsEast1Stack } from './us-east-1-stack';
@@ -115,12 +115,12 @@ export class DifyOnAwsStack extends cdk.Stack {
       usEast1Stack: props.usEast1Stack,
     });
 
-    const sandbox = new SandboxService(this, 'SandboxService', {
-      cfgw,
-      imageTag: props.difySandboxImageTag ?? 'latest',
+    const sandbox = new SandboxService(this, 'ApiService', {
+      cluster,
+      sandboxImageTag: props.difySandboxImageTag ?? 'latest',
     });
 
-    new ApiService(this, 'ApiLambdaService', {
+    new ApiLambdaService(this, 'ApiLambdaService', {
       vpc,
       cfgw,
       postgres,
@@ -130,7 +130,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       sandbox,
     });
 
-    new WebService(this, 'WebLambdaService', {
+    new WebLambdaService(this, 'WebLambdaService', {
       vpc,
       cfgw,
       imageTag,

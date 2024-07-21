@@ -19,7 +19,7 @@ export interface WebLambdaServiceProps {
   debug?: boolean;
 }
 
-export class WebService extends Construct {
+export class WebLambdaService extends Construct {
   constructor(scope: Construct, id: string, props: WebLambdaServiceProps) {
     super(scope, id);
 
