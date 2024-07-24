@@ -99,7 +99,9 @@ export class CloudFrontGateway extends Construct {
       enableAcceptEncodingBrotli: true,
       enableAcceptEncodingGzip: true,
     });
-    const origin = new FunctionUrlOrigin(furl);
+    const origin = new FunctionUrlOrigin(furl, {
+      connectionTimeout: Duration.seconds(6),
+    });
 
     const cfnDistribution = this.distribution.node.defaultChild as CfnResource;
 

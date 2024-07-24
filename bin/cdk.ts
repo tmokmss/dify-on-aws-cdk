@@ -15,7 +15,7 @@ new DifyOnAwsStack(app, 'DifyOnAwsStack', {
   crossRegionReferences: true,
   // Allow access from the Internet. Narrow this down if you want further security.
   allowedCidrs: ['0.0.0.0/0'],
-  difyImageTag: '0.6.13',
+  difyImageTag: '0.6.15',
   difySandboxImageTag: '0.2.4',
   usEast1Stack: virginia,
 });

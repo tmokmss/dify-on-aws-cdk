@@ -5,6 +5,7 @@ COPY ./extensions /opt/extensions
 # https://github.com/awslabs/aws-lambda-web-adapter?tab=readme-ov-file#configurations
 ENV AWS_LWA_PORT 5001
 ENV AWS_LWA_INVOKE_MODE response_stream
+ENV AWS_LWA_ASYNC_INIT true
 # ENV RUST_LOG=debug
 RUN python -m compileall -f -j 0 -q ./ || true
 # RUN (python -m compileall -f -j 0 -q ./ || true) && (python -m compileall -j 0 -f -q /usr/local/lib/ || true)
