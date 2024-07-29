@@ -1,7 +1,6 @@
 import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Duration, Stack, aws_ecs as ecs } from 'aws-cdk-lib';
-import { Port } from 'aws-cdk-lib/aws-ec2';
 import { Platform } from 'aws-cdk-lib/aws-ecr-assets';
 import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 import { Postgres } from '../postgres';
@@ -9,11 +8,11 @@ import { Redis } from '../redis';
 import { IBucket } from 'aws-cdk-lib/aws-s3';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 import { join } from 'path';
-import { ApiGateway } from '../api/api-gateway';
+import { Alb } from '../alb';
 
 export interface ApiServiceProps {
   cluster: ICluster;
-  apigw: ApiGateway;
+  alb: Alb;
 
   postgres: Postgres;
   redis: Redis;
@@ -35,8 +34,7 @@ export class ApiService extends Construct {
   constructor(scope: Construct, id: string, props: ApiServiceProps) {
     super(scope, id);
 
-    const { cluster, apigw, postgres, redis, storageBucket, debug = false } = props;
-    const mappingName = 'api';
+    const { cluster, alb, postgres, redis, storageBucket, debug = false } = props;
     const port = 5001;
 
     const taskDefinition = new FargateTaskDefinition(this, 'Task', {
@@ -63,18 +61,15 @@ export class ApiService extends Construct {
         // enable DEBUG mode to output more logs
         DEBUG: debug ? 'true' : 'false',
 
-        // When enabled, migrations will be executed prior to application startup and the application will start after the migrations have completed.
-        MIGRATION_ENABLED: 'true',
-
         // The base URL of console application web frontend, refers to the Console base URL of WEB service if console domain is
         // different from api or web app domain.
-        CONSOLE_WEB_URL: apigw.url,
+        CONSOLE_WEB_URL: alb.url,
         // The base URL of console application api server, refers to the Console base URL of WEB service if console domain is different from api or web app domain.
-        CONSOLE_API_URL: apigw.url,
+        CONSOLE_API_URL: alb.url,
         // The URL prefix for Service API endpoints, refers to the base URL of the current API service if api domain is different from console domain.
-        SERVICE_API_URL: apigw.url,
+        SERVICE_API_URL: alb.url,
         // The URL prefix for Web APP frontend, refers to the Web App base URL of WEB service if web app domain is different from console or api domain.
-        APP_WEB_URL: apigw.url,
+        APP_WEB_URL: alb.url,
 
         // The configurations of redis connection.
         REDIS_HOST: redis.endpoint,
@@ -105,7 +100,7 @@ export class ApiService extends Construct {
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: 'log',
       }),
-      portMappings: [{ containerPort: port, name: mappingName }],
+      portMappings: [{ containerPort: port }],
       secrets: {
         // The configurations of postgres database connection.
         // It is consistent with the configuration in the 'db' service below.
@@ -161,7 +156,7 @@ export class ApiService extends Construct {
       new PolicyStatement({
         actions: ['bedrock:InvokeModel', 'bedrock:InvokeModelWithResponseStream'],
         resources: ['*'],
-      })
+      }),
     );
 
     // Service
@@ -178,25 +173,13 @@ export class ApiService extends Construct {
           weight: 1,
         },
       ],
-      serviceConnectConfiguration: {
-        services: [
-          {
-            portMappingName: mappingName,
-          },
-        ],
-        logDriver: ecs.LogDriver.awsLogs({
-          streamPrefix: 'log',
-        }),
-      },
       enableExecuteCommand: true,
     });
 
     service.connections.allowToDefaultPort(postgres);
     service.connections.allowToDefaultPort(redis);
-    service.node.addDependency(cluster.defaultCloudMapNamespace!);
-    service.connections.allowFrom(apigw, Port.tcp(port));
 
     const paths = ['/console/api', '/api', '/v1', '/files'];
-    apigw.addService(mappingName, service, [...paths, ...paths.map((p) => `${p}/*`)]);
+    alb.addEcsService('Api', service, port, '/health', [...paths, ...paths.map((p) => `${p}/*`)]);
   }
 }

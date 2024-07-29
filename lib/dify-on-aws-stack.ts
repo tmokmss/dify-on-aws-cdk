@@ -1,5 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
-import { AmazonLinuxCpuType, IVpc, InstanceClass, InstanceSize, InstanceType, MachineImage, NatProvider, Peer, Port, Vpc } from 'aws-cdk-lib/aws-ec2';
+import {
+  AmazonLinuxCpuType,
+  IVpc,
+  InstanceClass,
+  InstanceSize,
+  InstanceType,
+  MachineImage,
+  NatProvider,
+  Vpc,
+} from 'aws-cdk-lib/aws-ec2';
 import { Cluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Postgres } from './constructs/postgres';
@@ -8,8 +17,7 @@ import { BlockPublicAccess, Bucket } from 'aws-cdk-lib/aws-s3';
 import { WebService } from './constructs/dify-services/web';
 import { ApiService } from './constructs/dify-services/api';
 import { WorkerService } from './constructs/dify-services/worker';
-import { ApiGateway } from './constructs/api/api-gateway';
-import { NamespaceType } from 'aws-cdk-lib/aws-servicediscovery';
+import { Alb } from './constructs/alb';
 
 interface DifyOnAwsStackProps extends cdk.StackProps {
   /**
@@ -76,11 +84,6 @@ export class DifyOnAwsStack extends cdk.Stack {
     const cluster = new Cluster(this, 'Cluster', {
       vpc,
       containerInsights: true,
-      defaultCloudMapNamespace: {
-        name: 'dify',
-        useForServiceConnect: true,
-        type: NamespaceType.HTTP,
-      },
     });
 
     const postgres = new Postgres(this, 'Postgres', {
@@ -96,26 +99,22 @@ export class DifyOnAwsStack extends cdk.Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    const apigw = new ApiGateway(this, 'ApiGateway', {
-      vpc,
-      namespace: cluster.defaultCloudMapNamespace!,
-      allowedCidrs: props.allowedCidrs,
-    });
-
-    new WebService(this, 'WebService', {
-      cluster,
-      apigw,
-      imageTag,
-    });
+    const alb = new Alb(this, 'Alb', { vpc, allowedCidrs: props.allowedCidrs });
 
     const api = new ApiService(this, 'ApiService', {
       cluster,
-      apigw,
+      alb,
       postgres,
       redis,
       storageBucket,
       imageTag,
       sandboxImageTag: props.difySandboxImageTag ?? 'latest',
+    });
+
+    new WebService(this, 'WebService', {
+      cluster,
+      alb,
+      imageTag,
     });
 
     new WorkerService(this, 'WorkerService', {
@@ -125,6 +124,10 @@ export class DifyOnAwsStack extends cdk.Stack {
       storageBucket,
       encryptionSecret: api.encryptionSecret,
       imageTag,
+    });
+
+    new cdk.CfnOutput(this, 'DifyUrl', {
+      value: alb.url,
     });
   }
 }

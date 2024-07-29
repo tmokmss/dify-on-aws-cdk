@@ -8,5 +8,5 @@ new DifyOnAwsStack(app, 'DifyOnAwsStack', {
   env: { region: 'ap-northeast-1' },
   // Allow access from the Internet. Narrow this down if you want further security.
   allowedCidrs: ['0.0.0.0/0'],
-  difyImageTag: '0.6.12',
+  difyImageTag: '0.6.15',
 });
