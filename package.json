@@ -11,7 +11,6 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.141",
     "@types/jest": "^29.5.12",
     "@types/node": "20.12.7",
     "aws-cdk": "^2.145.0",
@@ -22,9 +21,7 @@
     "typescript": "~5.4.5"
   },
   "dependencies": {
-    "@aws-sdk/credential-providers": "^3.614.0",
-    "@aws-sdk/protocol-http": "^3.374.0",
-    "@smithy/signature-v4": "^3.1.2",
+    "@types/aws-lambda": "^8.10.138",
     "aws-cdk-lib": "^2.145.0",
     "cdk-lambda-llrt": "^0.0.11",
     "cdk-time-sleep": "^0.0.5",
