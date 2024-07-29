@@ -3,6 +3,9 @@ import { Template } from 'aws-cdk-lib/assertions';
 import { DifyOnAwsStack } from '../lib/dify-on-aws-stack';
 import { UsEast1Stack } from '../lib/us-east-1-stack';
 
+// custom resource to read ssm parameter uses Date.now(), which must be deterministic in a snapshot test
+jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
+
 test('Snapshot test (us-east-1)', () => {
   const app = new cdk.App();
 
