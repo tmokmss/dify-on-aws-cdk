@@ -44,6 +44,8 @@ export class WorkerService extends Construct {
         LOG_LEVEL: debug ? 'DEBUG' : 'ERROR',
         // enable DEBUG mode to output more logs
         DEBUG: debug ? 'true' : 'false',
+        // When enabled, migrations will be executed prior to application startup and the application will start after the migrations have completed.
+        MIGRATION_ENABLED: 'true',
 
         // The configurations of redis connection.
         REDIS_HOST: redis.endpoint,
