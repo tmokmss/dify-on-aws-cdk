@@ -7,6 +7,8 @@ test('Snapshot test', () => {
   const stack = new DifyOnAwsStack(app, 'TestStack', {
     allowedCidrs: ['0.0.0.0/0'],
     difySandboxImageTag: '0.2.4',
+    domainName: 'example.com',
+    hostedZoneId: 'Z0123456789ABCDEFG',
   });
   const template = Template.fromStack(stack);
   expect(template).toMatchSnapshot();
