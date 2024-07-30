@@ -1,12 +1,12 @@
 import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Duration, aws_ecs as ecs } from 'aws-cdk-lib';
-import { Port } from 'aws-cdk-lib/aws-ec2';
-import { ApiGateway } from '../api/api-gateway';
+import { Alb } from '../alb';
+import { AlbController } from 'aws-cdk-lib/aws-eks';
 
 export interface WebServiceProps {
   cluster: ICluster;
-  apigw: ApiGateway;
+  alb: Alb;
 
   imageTag: string;
 
@@ -21,8 +21,7 @@ export class WebService extends Construct {
   constructor(scope: Construct, id: string, props: WebServiceProps) {
     super(scope, id);
 
-    const { cluster, apigw, debug = false } = props;
-    const mappingName = 'web';
+    const { cluster, alb, debug = false } = props;
     const port = 3000;
 
     const taskDefinition = new FargateTaskDefinition(this, 'Task', {
@@ -34,7 +33,6 @@ export class WebService extends Construct {
     taskDefinition.addContainer('Main', {
       image: ecs.ContainerImage.fromRegistry(`langgenius/dify-web:${props.imageTag}`),
       environment: {
-        MODE: 'api',
         // The log level for the application. Supported values are `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
         LOG_LEVEL: debug ? 'DEBUG' : 'ERROR',
         // enable DEBUG mode to output more logs
@@ -42,12 +40,12 @@ export class WebService extends Construct {
 
         // The base URL of console application api server, refers to the Console base URL of WEB service if console domain is different from api or web app domain.
         // example: http://cloud.dify.ai
-        CONSOLE_API_URL: apigw.url,
+        CONSOLE_API_URL: alb.url,
         // The URL prefix for Web APP frontend, refers to the Web App base URL of WEB service if web app domain is different from console or api domain.
         // example: http://udify.app
-        APP_API_URL: apigw.url,
+        APP_API_URL: alb.url,
 
-        // Set host to 0.0.0.0 seems necessary for ECS Service Connect to work.
+        // Setting host to 0.0.0.0 seems necessary for health check to pass.
         // https://nextjs.org/docs/pages/api-reference/next-config-js/output
         HOSTNAME: '0.0.0.0',
         PORT: port.toString(),
@@ -55,7 +53,7 @@ export class WebService extends Construct {
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: 'log',
       }),
-      portMappings: [{ containerPort: port, name: mappingName }],
+      portMappings: [{ containerPort: port }],
       healthCheck: {
         // use wget instead of curl due to alpine: https://stackoverflow.com/a/47722899/18550269
         command: ['CMD-SHELL', `wget --no-verbose --tries=1 --spider http://localhost:${port}/ || exit 1`],
@@ -79,21 +77,9 @@ export class WebService extends Construct {
           weight: 1,
         },
       ],
-      serviceConnectConfiguration: {
-        services: [
-          {
-            portMappingName: mappingName,
-          },
-        ],
-        logDriver: ecs.LogDriver.awsLogs({
-          streamPrefix: 'log',
-        }),
-      },
       enableExecuteCommand: true,
     });
-    service.node.addDependency(cluster.defaultCloudMapNamespace!);
-    service.connections.allowFrom(apigw, Port.tcp(port));
 
-    apigw.addService(mappingName, service, ['/*']);
+    alb.addEcsService('Web', service, port, '/', ['/*']);
   }
 }
