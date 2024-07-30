@@ -1,4 +1,5 @@
 import { Duration } from 'aws-cdk-lib';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { IVpc, Peer, Port } from 'aws-cdk-lib/aws-ec2';
 import { FargateService, IService } from 'aws-cdk-lib/aws-ecs';
 import {
@@ -9,11 +10,23 @@ import {
   ListenerAction,
   ListenerCondition,
 } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
+import { ARecord, IHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { LoadBalancerTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Construct } from 'constructs';
 
 export interface AlbProps {
   vpc: IVpc;
   allowedCidrs: string[];
+
+  /**
+   * @default 'dify'
+   */
+  subDomain?: string;
+
+  /**
+   * @default custom domain and TLS is not configured.
+   */
+  hostedZone?: IHostedZone;
 }
 
 export class Alb extends Construct {
@@ -26,26 +39,42 @@ export class Alb extends Construct {
   constructor(scope: Construct, id: string, props: AlbProps) {
     super(scope, id);
 
-    const { vpc } = props;
+    const { vpc, subDomain = 'dify' } = props;
+    const protocol = props.hostedZone ? ApplicationProtocol.HTTPS : ApplicationProtocol.HTTP;
+    const port = protocol == ApplicationProtocol.HTTPS ? 443 : 80;
+    const certificate = props.hostedZone
+      ? new Certificate(this, 'Certificate', {
+          domainName: `${subDomain}.${props.hostedZone.zoneName}`,
+          validation: CertificateValidation.fromDns(props.hostedZone),
+        })
+      : undefined;
 
     const alb = new ApplicationLoadBalancer(this, 'Resource', {
       vpc,
       vpcSubnets: vpc.selectSubnets({ subnets: vpc.publicSubnets }),
       internetFacing: true,
     });
+    this.url = `${protocol.toLowerCase()}://${alb.loadBalancerDnsName}`;
 
     const listener = alb.addListener('Listener', {
-      port: 80,
-      protocol: ApplicationProtocol.HTTP,
+      protocol,
       open: false,
       defaultAction: ListenerAction.fixedResponse(400),
+      certificates: certificate ? [certificate] : undefined,
     });
+    props.allowedCidrs.forEach((cidr) => alb.connections.allowFrom(Peer.ipv4(cidr), Port.tcp(port)));
 
-    props.allowedCidrs.forEach((cidr) => alb.connections.allowFrom(Peer.ipv4(cidr), Port.tcp(80)));
+    if (props.hostedZone) {
+      new ARecord(this, 'AliasRecord', {
+        zone: props.hostedZone,
+        recordName: subDomain,
+        target: RecordTarget.fromAlias(new LoadBalancerTarget(alb)),
+      });
+      this.url = `${protocol.toLowerCase()}://${subDomain}.${props.hostedZone.zoneName}`;
+    }
 
     this.vpc = vpc;
     this.listener = listener;
-    this.url = `http://${alb.loadBalancerDnsName}`;
   }
 
   public addEcsService(id: string, ecsService: FargateService, port: number, healthCheckPath: string, paths: string[]) {
@@ -67,7 +96,6 @@ export class Alb extends Construct {
     // https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html
     for (let i = 0; i < Math.floor((paths.length + 4) / 5); i++) {
       const slice = paths.slice(i * 5, (i + 1) * 5);
-      console.log(slice);
       this.listener.addTargetGroups(`${id}${i}`, {
         targetGroups: [group],
         conditions: [ListenerCondition.pathPatterns(slice)],

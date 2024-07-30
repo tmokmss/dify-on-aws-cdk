@@ -18,6 +18,7 @@ import { WebService } from './constructs/dify-services/web';
 import { ApiService } from './constructs/dify-services/api';
 import { WorkerService } from './constructs/dify-services/worker';
 import { Alb } from './constructs/alb';
+import { PublicHostedZone } from 'aws-cdk-lib/aws-route53';
 
 interface DifyOnAwsStackProps extends cdk.StackProps {
   /**
@@ -39,6 +40,19 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
    * @default create a new VPC
    */
   vpcId?: string;
+
+  /**
+   * The domain name you use for Dify's service URL.
+   * You must own a Route53 public hosted zone for the domain in your account.
+   * @default No custom domain is used.
+   */
+  domainName?: string;
+
+  /**
+   * The ID of Route53 hosted zone for the domain.
+   * @default No custom domain is used.
+   */
+  hostedZoneId?: string;
 
   /**
    * The image tag to deploy Dify container images (api=worker and web).
@@ -76,10 +90,24 @@ export class DifyOnAwsStack extends cdk.Stack {
                 instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.NANO),
                 machineImage: MachineImage.latestAmazonLinux2023({ cpuType: AmazonLinuxCpuType.ARM_64 }),
               }),
+              natGateways: 1,
             }
           : {}),
+        maxAzs: 2,
       });
     }
+
+    if ((props.hostedZoneId != null) !== (props.domainName != null)) {
+      throw new Error(`You have to set both hostedZoneId and domainName! Or leave both blank.`);
+    }
+
+    const hostedZone =
+      props.domainName && props.hostedZoneId
+        ? PublicHostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+            zoneName: props.domainName,
+            hostedZoneId: props.hostedZoneId,
+          })
+        : undefined;
 
     const cluster = new Cluster(this, 'Cluster', {
       vpc,
@@ -99,7 +127,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
-    const alb = new Alb(this, 'Alb', { vpc, allowedCidrs: props.allowedCidrs });
+    const alb = new Alb(this, 'Alb', { vpc, allowedCidrs: props.allowedCidrs, hostedZone });
 
     const api = new ApiService(this, 'ApiService', {
       cluster,
