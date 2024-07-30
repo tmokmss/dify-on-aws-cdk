@@ -41,7 +41,6 @@ export class Alb extends Construct {
 
     const { vpc, subDomain = 'dify' } = props;
     const protocol = props.hostedZone ? ApplicationProtocol.HTTPS : ApplicationProtocol.HTTP;
-    const port = protocol == ApplicationProtocol.HTTPS ? 443 : 80;
     const certificate = props.hostedZone
       ? new Certificate(this, 'Certificate', {
           domainName: `${subDomain}.${props.hostedZone.zoneName}`,
@@ -62,7 +61,7 @@ export class Alb extends Construct {
       defaultAction: ListenerAction.fixedResponse(400),
       certificates: certificate ? [certificate] : undefined,
     });
-    props.allowedCidrs.forEach((cidr) => alb.connections.allowFrom(Peer.ipv4(cidr), Port.tcp(port)));
+    props.allowedCidrs.forEach((cidr) => listener.connections.allowDefaultPortFrom(Peer.ipv4(cidr)));
 
     if (props.hostedZone) {
       new ARecord(this, 'AliasRecord', {
