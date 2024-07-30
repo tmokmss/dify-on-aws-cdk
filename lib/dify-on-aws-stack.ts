@@ -77,7 +77,7 @@ export class DifyOnAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DifyOnAwsStackProps) {
     super(scope, id, props);
 
-    const { difyImageTag: imageTag = 'latest' } = props;
+    const { difyImageTag: imageTag = 'latest', difySandboxImageTag: sandboxImageTag = 'latest' } = props;
 
     let vpc: IVpc;
     if (props.vpcId != null) {
@@ -136,7 +136,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       redis,
       storageBucket,
       imageTag,
-      sandboxImageTag: props.difySandboxImageTag ?? 'latest',
+      sandboxImageTag,
     });
 
     new WebService(this, 'WebService', {
