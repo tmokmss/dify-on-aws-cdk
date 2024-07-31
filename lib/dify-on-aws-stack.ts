@@ -55,8 +55,8 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
   hostedZoneId?: string;
 
   /**
-   * If true, the ElastiCache Redis cluster is deployed to multiple AZ for fault tolerance.
-   * It is generally recommended to enable this, you can disable it to minimize AWS cost.
+   * If true, the ElastiCache Redis cluster is deployed to multiple AZs for fault tolerance.
+   * It is generally recommended to enable this, but you can disable it to minimize AWS cost.
    * @default true
    */
   isRedisMultiAz?: boolean;
