@@ -55,6 +55,13 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
   hostedZoneId?: string;
 
   /**
+   * If true, the ElastiCache Redis cluster is deployed to multiple AZ for fault tolerance.
+   * It is generally recommended to enable this, you can disable it to minimize AWS cost.
+   * @default true
+   */
+  isRedisMultiAz?: boolean;
+
+  /**
    * The image tag to deploy Dify container images (api=worker and web).
    * The images are pulled from [here](https://hub.docker.com/u/langgenius).
    *
@@ -88,7 +95,6 @@ export class DifyOnAwsStack extends cdk.Stack {
           ? {
               natGatewayProvider: NatProvider.instanceV2({
                 instanceType: InstanceType.of(InstanceClass.T4G, InstanceSize.NANO),
-                machineImage: MachineImage.latestAmazonLinux2023({ cpuType: AmazonLinuxCpuType.ARM_64 }),
               }),
               natGateways: 1,
             }
@@ -118,7 +124,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       vpc,
     });
 
-    const redis = new Redis(this, 'Redis', { vpc });
+    const redis = new Redis(this, 'Redis', { vpc, multiAz: props.isRedisMultiAz ?? true });
 
     const storageBucket = new Bucket(this, 'StorageBucket', {
       autoDeleteObjects: true,

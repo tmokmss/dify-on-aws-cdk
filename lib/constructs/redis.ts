@@ -1,6 +1,5 @@
 import { Construct } from 'constructs';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
-import { CfnOutput } from 'aws-cdk-lib';
 import { CfnReplicationGroup, CfnSubnetGroup } from 'aws-cdk-lib/aws-elasticache';
 import { SecurityGroup } from 'aws-cdk-lib/aws-ec2';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
@@ -8,6 +7,7 @@ import { StringParameter } from 'aws-cdk-lib/aws-ssm';
 
 export interface RedisProps {
   vpc: ec2.IVpc;
+  multiAz: boolean;
 }
 
 export class Redis extends Construct implements ec2.IConnectable {
@@ -20,7 +20,7 @@ export class Redis extends Construct implements ec2.IConnectable {
   constructor(scope: Construct, id: string, props: RedisProps) {
     super(scope, id);
 
-    const { vpc } = props;
+    const { vpc, multiAz } = props;
 
     const subnetGroup = new CfnSubnetGroup(this, 'SubnetGroup', {
       subnetIds: vpc.privateSubnets.map(({ subnetId }) => subnetId),
@@ -43,11 +43,12 @@ export class Redis extends Construct implements ec2.IConnectable {
       cacheNodeType: 'cache.t4g.micro',
       engineVersion: '7.1',
       port: this.port,
-      replicasPerNodeGroup: 1,
+      replicasPerNodeGroup: multiAz ? 1 : 0,
       numNodeGroups: 1,
-      replicationGroupDescription: 'dify redis cluster',
+      replicationGroupDescription: 'Dify redis cluster',
       cacheSubnetGroupName: subnetGroup.ref,
-      multiAzEnabled: true,
+      automaticFailoverEnabled: multiAz,
+      multiAzEnabled: multiAz,
       securityGroupIds: [securityGroup.securityGroupId],
       transitEncryptionEnabled: true,
       atRestEncryptionEnabled: true,
