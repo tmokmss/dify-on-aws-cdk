@@ -78,13 +78,26 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
    * @default "latest"
    */
   difySandboxImageTag?: string;
+
+  /**
+   * If true, Dify sandbox allows any system calls when executing code.
+   * Do NOT set this property if you are not sure code executed in the sandbox
+   * can be trusted or not.
+   *
+   * @default false
+   */
+  allowAnySysCalls?: boolean;
 }
 
 export class DifyOnAwsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: DifyOnAwsStackProps) {
     super(scope, id, props);
 
-    const { difyImageTag: imageTag = 'latest', difySandboxImageTag: sandboxImageTag = 'latest' } = props;
+    const {
+      difyImageTag: imageTag = 'latest',
+      difySandboxImageTag: sandboxImageTag = 'latest',
+      allowAnySysCalls = false,
+    } = props;
 
     let vpc: IVpc;
     if (props.vpcId != null) {
@@ -143,6 +156,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       storageBucket,
       imageTag,
       sandboxImageTag,
+      allowAnySysCalls,
     });
 
     new WebService(this, 'WebService', {

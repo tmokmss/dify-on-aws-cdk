@@ -20,6 +20,7 @@ export interface ApiServiceProps {
 
   imageTag: string;
   sandboxImageTag: string;
+  allowAnySysCalls: boolean;
 
   /**
    * If true, enable debug outputs
@@ -138,6 +139,29 @@ export class ApiService extends Construct {
         GIN_MODE: 'release',
         WORKER_TIMEOUT: '15',
         ENABLE_NETWORK: 'true',
+        ...(props.allowAnySysCalls
+          ? {
+              ALLOWED_SYSCALLS: Array(457)
+                .fill(0)
+                .map((_, i) => i)
+                .join(','),
+            }
+          : {}),
+        PYTHON_LIB_PATH: [
+          // Originally from here:
+          // https://github.com/langgenius/dify-sandbox/blob/main/internal/static/config_default_amd64.go
+          '/usr/local/lib/python3.10',
+          '/usr/lib/python3.10',
+          '/usr/lib/python3',
+          // copy all the lib. **DO NOT** add a trailing slash!
+          '/usr/lib/x86_64-linux-gnu',
+          '/etc/ssl/certs/ca-certificates.crt',
+          '/etc/nsswitch.conf',
+          '/etc/hosts',
+          '/etc/resolv.conf',
+          '/run/systemd/resolve/stub-resolv.conf',
+          '/run/resolvconf/resolv.conf',
+        ].join(','),
       },
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: 'log',
