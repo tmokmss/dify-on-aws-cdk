@@ -996,10 +996,14 @@ exports[`Snapshot test 1`] = `
                 "Name": "ENABLE_NETWORK",
                 "Value": "true",
               },
+              {
+                "Name": "PYTHON_LIB_PATH",
+                "Value": "/usr/local/lib/python3.10,/usr/lib/python3.10,/usr/lib/python3,/usr/lib/x86_64-linux-gnu,/etc/ssl/certs/ca-certificates.crt,/etc/nsswitch.conf,/etc/hosts,/etc/resolv.conf,/run/systemd/resolve/stub-resolv.conf,/run/resolvconf/resolv.conf",
+              },
             ],
             "Essential": true,
             "Image": {
-              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:904a2cfc7bfd3eaca0cc1c08b18f53ec219c75d13f68aafb7ad2787691bd6ec0",
+              "Fn::Sub": "\${AWS::AccountId}.dkr.ecr.\${AWS::Region}.\${AWS::URLSuffix}/cdk-hnb659fds-container-assets-\${AWS::AccountId}-\${AWS::Region}:4f82f88e853f5bb99f9a2c526dcacc44aea241f3f4b9f74e8d75d38ad33627f9",
             },
             "LogConfiguration": {
               "LogDriver": "awslogs",
