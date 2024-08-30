@@ -9,6 +9,7 @@ test('Snapshot test', () => {
     difySandboxImageTag: '0.2.4',
     domainName: 'example.com',
     hostedZoneId: 'Z0123456789ABCDEFG',
+    allowAnySyscalls: true,
   });
   const template = Template.fromStack(stack);
   expect(template).toMatchSnapshot();

@@ -86,7 +86,7 @@ interface DifyOnAwsStackProps extends cdk.StackProps {
    *
    * @default false
    */
-  allowAnySysCalls?: boolean;
+  allowAnySyscalls?: boolean;
 }
 
 export class DifyOnAwsStack extends cdk.Stack {
@@ -96,7 +96,7 @@ export class DifyOnAwsStack extends cdk.Stack {
     const {
       difyImageTag: imageTag = 'latest',
       difySandboxImageTag: sandboxImageTag = 'latest',
-      allowAnySysCalls = false,
+      allowAnySyscalls = false,
     } = props;
 
     let vpc: IVpc;
@@ -156,7 +156,7 @@ export class DifyOnAwsStack extends cdk.Stack {
       storageBucket,
       imageTag,
       sandboxImageTag,
-      allowAnySysCalls,
+      allowAnySyscalls,
     });
 
     new WebService(this, 'WebService', {

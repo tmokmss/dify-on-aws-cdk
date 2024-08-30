@@ -20,7 +20,7 @@ export interface ApiServiceProps {
 
   imageTag: string;
   sandboxImageTag: string;
-  allowAnySysCalls: boolean;
+  allowAnySyscalls: boolean;
 
   /**
    * If true, enable debug outputs
@@ -139,7 +139,7 @@ export class ApiService extends Construct {
         GIN_MODE: 'release',
         WORKER_TIMEOUT: '15',
         ENABLE_NETWORK: 'true',
-        ...(props.allowAnySysCalls
+        ...(props.allowAnySyscalls
           ? {
               ALLOWED_SYSCALLS: Array(457)
                 .fill(0)
