@@ -63,7 +63,7 @@ IAM policies are already configured properly, so you can just select a correct A
 
 ![model-setup](./imgs/model-setup.png)
 
-## Add Python packages available for Dify code block
+## Add Python packages available in code execution
 
 You can add Python packages that is available in Dify code execution feature. Edit [sandbox-python-requirements.txt](./lib/constructs/dify-services/docker/sandbox-python-requirements.txt) following the [Requirements File Format](https://pip.pypa.io/en/stable/reference/requirements-file-format/).
 
@@ -71,6 +71,8 @@ In some libraries, you have to allow additonal system calls in Dify sandbox. Thi
 
 > [!WARNING]
 > If you enable `allowAnySysCalls` flag, please make sure that code executed in your Dify tenant can be fully trusted.
+
+Please also refer to this blog article for more details: [Using any Python libraries in Dify's code block](https://tmokmss.hatenablog.com/entry/use-any-python-packages-on-dify-sandbox)
 
 ## Clean up
 To avoid incurring future charges, clean up the resources you created.
