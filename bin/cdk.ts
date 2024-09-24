@@ -2,6 +2,7 @@
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { DifyOnAwsStack } from '../lib/dify-on-aws-stack';
+import { AwsPrototypingChecks } from '@aws/pdk/pdk-nag';
 
 const app = new cdk.App();
 new DifyOnAwsStack(app, 'DifyOnAwsStack', {
@@ -14,3 +15,5 @@ new DifyOnAwsStack(app, 'DifyOnAwsStack', {
   allowedCidrs: ['0.0.0.0/0'],
   difyImageTag: '0.8.3',
 });
+
+// cdk.Aspects.of(app).add(new AwsPrototypingChecks());

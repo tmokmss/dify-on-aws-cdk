@@ -7,6 +7,7 @@ import {
   InstanceType,
   MachineImage,
   NatProvider,
+  SubnetType,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { Cluster } from 'aws-cdk-lib/aws-ecs';
@@ -113,6 +114,17 @@ export class DifyOnAwsStack extends cdk.Stack {
             }
           : {}),
         maxAzs: 2,
+        subnetConfiguration: [
+          {
+            subnetType: SubnetType.PUBLIC,
+            name: 'Public',
+            mapPublicIpOnLaunch: false,
+          },
+          {
+            subnetType: SubnetType.PRIVATE_WITH_EGRESS,
+            name: 'Private',
+          },
+        ],
       });
     }
 
