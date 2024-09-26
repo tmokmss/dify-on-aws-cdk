@@ -1,8 +1,11 @@
-import { CpuArchitecture, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
+import { CpuArchitecture, DeploymentControllerType, FargateTaskDefinition, ICluster } from 'aws-cdk-lib/aws-ecs';
 import { Construct } from 'constructs';
 import { Duration, aws_ecs as ecs } from 'aws-cdk-lib';
 import { Alb } from '../alb';
 import { AlbController } from 'aws-cdk-lib/aws-eks';
+import { EcsDeployment } from '@cdklabs/cdk-ecs-codedeploy';
+import { EcsDeploymentConfig, EcsDeploymentGroup } from 'aws-cdk-lib/aws-codedeploy';
+import { ApplicationProtocol, ApplicationTargetGroup, TargetType } from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 
 export interface WebServiceProps {
   cluster: ICluster;
@@ -49,6 +52,7 @@ export class WebService extends Construct {
         // https://nextjs.org/docs/pages/api-reference/next-config-js/output
         HOSTNAME: '0.0.0.0',
         PORT: port.toString(),
+        FOO: 'bar',
       },
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: 'log',
@@ -78,8 +82,46 @@ export class WebService extends Construct {
         },
       ],
       enableExecuteCommand: true,
+      deploymentController: {
+        type: DeploymentControllerType.CODE_DEPLOY,
+      },
     });
 
-    alb.addEcsService('Web', service, port, '/', ['/*']);
+    const blueGroup = alb.addEcsService('Web', service, port, '/', ['/*']);
+
+    const greenGroup = new ApplicationTargetGroup(this, 'GreenTargetGroup', {
+      vpc: cluster.vpc,
+      port: port,
+      protocol: ApplicationProtocol.HTTP,
+      targetType: TargetType.IP,
+      deregistrationDelay: Duration.seconds(10),
+      healthCheck: {
+        path: '/',
+        interval: Duration.seconds(15),
+        healthyHttpCodes: '200-299,307',
+        healthyThresholdCount: 2,
+        unhealthyThresholdCount: 6,
+      },
+    });
+
+    const deploymentGroup = new EcsDeploymentGroup(this, 'BlueGreenDG', {
+      service,
+      blueGreenDeploymentConfig: {
+        blueTargetGroup: blueGroup,
+        greenTargetGroup: greenGroup,
+        listener: alb.listener,
+      },
+      deploymentConfig: EcsDeploymentConfig.CANARY_10PERCENT_5MINUTES,
+    });
+
+    new EcsDeployment({
+      deploymentGroup,
+      targetService: {
+        taskDefinition,
+        containerName: 'Main',
+        containerPort: port,
+      },
+      timeout: Duration.minutes(60),
+    });
   }
 }

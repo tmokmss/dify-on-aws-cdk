@@ -33,7 +33,7 @@ export class Alb extends Construct {
   public url: string;
 
   private listenerPriority = 1;
-  private listener: ApplicationListener;
+  public listener: ApplicationListener;
   private vpc: IVpc;
 
   constructor(scope: Construct, id: string, props: AlbProps) {
@@ -101,5 +101,6 @@ export class Alb extends Construct {
         priority: this.listenerPriority++,
       });
     }
+    return group;
   }
 }
